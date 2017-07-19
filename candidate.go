@@ -9,8 +9,6 @@ const (
 )
 
 type Candidate struct {
-	Aggregate
-
 	Id             string
 	Status         CandidateStatus
 	KeepValue      int64
