@@ -2,6 +2,7 @@ package main
 
 type Pool interface {
 	SetKeepValue(id string, value int64)
+	SetVotes(id string, value int64)
 	SetStatus(id string, status CandidateStatus)
 	Candidate(id string) Candidate
 }
@@ -28,6 +29,12 @@ func (p *pool) SetKeepValue(id string, value int64) {
 	c := p.Candidate(id)
 
 	c.KeepValue = value
+}
+
+func (p *pool) SetVotes(id string, value int64) {
+	c := p.Candidate(id)
+
+	c.Votes = value
 }
 
 func (p *pool) SetStatus(id string, status CandidateStatus) {
