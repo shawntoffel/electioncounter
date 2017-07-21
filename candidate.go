@@ -13,5 +13,5 @@ type Candidate struct {
 	Status         CandidateStatus
 	KeepValue      int64
 	Votes          int64
-	FirstRankCount int64
+	FirstRankCount int
 }
