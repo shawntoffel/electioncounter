@@ -24,7 +24,7 @@ type CountCreated struct {
 	Precision     int
 }
 
-func (e CountCreated) Transition(c *counter) {
+func (e *CountCreated) Transition(c *counter) {
 	c.NumberToElect = e.NumberToElect
 	c.Ballots = e.Ballots
 
@@ -41,31 +41,17 @@ type QuotaUpdated struct {
 	NewQuota int64
 }
 
-func (e QuotaUpdated) Transition(c *counter) {
+func (e *QuotaUpdated) Transition(c *counter) {
 	c.Quota = e.NewQuota
-	e.Description = fmt.Sprintf("Quota has been updated to %d", e.NewQuota)
+	e.Description = fmt.Sprintf("Quota has been updated to %s", Format(e.NewQuota, c.Scaler))
 }
 
-type SetDroopQuota struct {
-	Event
-}
-
-func (e SetDroopQuota) Transition(c *counter) {
-
-	var numBallots = int64(len(c.Ballots))
-
-	var droop = ((numBallots*c.Scaler)/(int64(c.NumberToElect)+1))/c.Scaler*c.Scaler + c.Scaler
-
-	c.Quota = droop
-
-	e.Description = fmt.Sprintf("Quota has been set via Droop to %d", c.Quota)
-}
 
 type IncrementRound struct {
 	Event
 }
 
-func (e IncrementRound) Transition(c *counter) {
+func (e *IncrementRound) Transition(c *counter) {
 	c.Round++
 	e.Description = fmt.Sprintf("Round %d has started.", c.Round)
 }
@@ -76,10 +62,10 @@ type CandidateKeepValueUpdated struct {
 	NewKeepValue int64
 }
 
-func (e CandidateKeepValueUpdated) Transition(c *counter) {
+func (e *CandidateKeepValueUpdated) Transition(c *counter) {
 	c.Pool.SetKeepValue(e.Id, e.NewKeepValue)
 
-	e.Description = fmt.Sprintf("The keep value for candidate '%s' has been updated to %d", e.Id, e.NewKeepValue)
+	e.Description = fmt.Sprintf("The keep value for candidate '%s' has been updated to %s", e.Id, Format(e.NewKeepValue, c.Scaler))
 }
 
 type CandidateVotesUpdated struct {
@@ -88,10 +74,10 @@ type CandidateVotesUpdated struct {
 	NewVotes int64
 }
 
-func (e CandidateVotesUpdated) Transition(c *counter) {
+func (e *CandidateVotesUpdated) Transition(c *counter) {
 	c.Pool.SetVotes(e.Id, e.NewVotes)
 
-	e.Description = fmt.Sprintf("The vote count for candidate '%s' has been updated to %d", e.Id, e.NewVotes)
+	e.Description = fmt.Sprintf("The vote count for candidate '%s' has been updated to %s", e.Id, Format(e.NewVotes, c.Scaler))
 }
 
 type ElectCandidate struct {
@@ -99,7 +85,7 @@ type ElectCandidate struct {
 	Event
 }
 
-func (e ElectCandidate) Transition(c *counter) {
+func (e *ElectCandidate) Transition(c *counter) {
 	c.Pool.SetStatus(e.Id, Elected)
 
 	e.Description = fmt.Sprintf("Candidate '%s' has been elected.", e.Id)
@@ -110,7 +96,7 @@ type ExcludeCandidate struct {
 	Event
 }
 
-func (e ExcludeCandidate) Transition(c *counter) {
+func (e *ExcludeCandidate) Transition(c *counter) {
 	c.Pool.SetStatus(e.Id, Excluded)
 
 	e.Description = fmt.Sprintf("Candidate '%s' has been excluded.", e.Id)
@@ -120,6 +106,13 @@ type InitializeVotes struct {
 	Event
 }
 
-func (e InitializeVotes) Transition(c *counter) {
+func (e *InitializeVotes) Transition(c *counter) {
 
+}
+
+func Format(input int64, scale int64) string {
+	var first = input / scale
+	var second = input % scale
+
+	return fmt.Sprintf("%d.%d", first, second)
 }

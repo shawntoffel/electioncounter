@@ -20,7 +20,7 @@ type StvConfig struct {
 }
 
 func GetScaler(precision int) int64 {
-	var scaler = int64(10)
+	var scaler = int64(1)
 	for i := 0; i < precision; i++ {
 		scaler *= 10
 	}

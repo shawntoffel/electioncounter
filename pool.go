@@ -8,6 +8,7 @@ type Pool interface {
 	Candidates() []Candidate
 	Elected() []Candidate
 	TotalFirstRankCount() int
+	SetFirstRankCount(id string, count int)
 }
 
 type pool struct {
@@ -16,6 +17,7 @@ type pool struct {
 
 func NewPool(candidates []Candidate) Pool {
 	pool := pool{}
+	pool.CandidatePool = make(map[string]Candidate)
 
 	for _, c := range candidates {
 		pool.CandidatePool[c.Id] = c
@@ -32,18 +34,24 @@ func (p *pool) SetKeepValue(id string, value int64) {
 	c := p.Candidate(id)
 
 	c.KeepValue = value
+
+	p.CandidatePool[id] = c
 }
 
 func (p *pool) SetVotes(id string, value int64) {
 	c := p.Candidate(id)
 
 	c.Votes = value
+
+	p.CandidatePool[id] = c
 }
 
 func (p *pool) SetStatus(id string, status CandidateStatus) {
 	c := p.Candidate(id)
 
 	c.Status = status
+
+	p.CandidatePool[id] = c
 }
 
 func (p *pool) Candidates() []Candidate {
@@ -76,4 +84,12 @@ func (p *pool) TotalFirstRankCount() int {
 	}
 
 	return count
+}
+
+func (p *pool) SetFirstRankCount(id string, count int) {
+	c := p.Candidate(id)
+
+	c.FirstRankCount = count
+
+	p.CandidatePool[id] = c
 }

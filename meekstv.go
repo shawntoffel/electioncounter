@@ -2,6 +2,9 @@ package main
 
 type MeekStv interface {
 	Stv
+	Initialize(config StvConfig)
+
+	Run() ([]Candidate, Events)
 }
 
 type meekStv struct {
@@ -19,17 +22,10 @@ func NewMeekStv() MeekStv {
 }
 
 func (m *meekStv) Initialize(config StvConfig) {
-
-	countCreated := CountCreated{}
-	countCreated.Candidates = config.Candidates
-	countCreated.Ballots = config.Ballots
-	countCreated.Precision = config.Precision
-	countCreated.NumberToElect = config.NumberToElect
-
-	m.Counter.HandleEvent(countCreated)
+	m.Counter.Initialize(config)
 }
 
-func (m *meekStv) Run() {
+func (m *meekStv) Run() ([]Candidate, Events) {
 	m.Counter.SetInitialQuota()
 
 	m.Counter.InitializeVotes()
@@ -42,4 +38,5 @@ func (m *meekStv) Run() {
 		m.Counter.UpdateRound()
 	}
 
+	return m.Counter.Results()
 }
