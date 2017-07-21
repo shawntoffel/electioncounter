@@ -49,6 +49,18 @@ func (state *counter) CreateCount(config StvConfig) {
 	state.InitializeVotes()
 }
 
+func (state *counter) SetInitialQuota() {
+	initialVoteCount := int64(state.Pool.TotalFirstRankCount())
+	numberToElect := int64(state.NumberToElect)
+
+	var droopQuota = ((initialVoteCount*state.Scaler)/(numberToElect+1))/state.Scaler*state.Scaler + state.Scaler
+
+	event := QuotaUpdated{}
+	event.NewQuota = droopQuota
+
+	state.HandleEvent(&event)
+}
+
 func (state *counter) InitializeVotes() {
 	candidates := state.Pool.Candidates()
 
@@ -85,18 +97,6 @@ func (state *counter) Events() Events {
 
 func (state *counter) Results() ([]Candidate, Events) {
 	return state.Pool.Elected(), state.Changes
-}
-
-func (state *counter) SetInitialQuota() {
-	initialVoteCount := int64(state.Pool.TotalFirstRankCount())
-	numberToElect := int64(state.NumberToElect)
-
-	var droopQuota = ((initialVoteCount*state.Scaler)/(numberToElect+1))/state.Scaler*state.Scaler + state.Scaler
-
-	event := QuotaUpdated{}
-	event.NewQuota = droopQuota
-
-	state.HandleEvent(&event)
 }
 
 func (state *counter) UpdateCandidateForRound(candidate Candidate) {
