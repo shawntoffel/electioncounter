@@ -4,9 +4,7 @@ import (
 	"container/list"
 )
 
-type Events []interface{}
-
-type Counter interface {
+type MeekStvCounter interface {
 	HandleEvent(event CounterEvent)
 	Events() []interface{}
 
@@ -18,8 +16,6 @@ type Counter interface {
 	HasEnded() bool
 	Results() ([]Candidate, Events)
 }
-
-type Ballots []*list.List
 
 type counter struct {
 	aggregate
@@ -33,7 +29,7 @@ type counter struct {
 	Scaler        int64
 }
 
-func NewCounter(events []CounterEvent) Counter {
+func NewMeekStvCounter(events []CounterEvent) MeekStvCounter {
 	c := counter{}
 	for _, event := range events {
 		c.HandleEvent(event)
@@ -164,7 +160,7 @@ func (state *counter) UpdateRound() {
 
 }
 
-func (state *counter) DistributeVotes(firstCandidate Candidate, iter *list.Element, multiplier int64)  {
+func (state *counter) DistributeVotes(firstCandidate Candidate, iter *list.Element, multiplier int64) {
 
 	for {
 		if iter.Next() == nil {

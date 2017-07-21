@@ -1,29 +1,38 @@
 package main
 
-import (
-	"container/list"
-)
-
 type Stv interface {
-	//	Count(config StvConfig) ([]Candidate, []interface{})
+	Initialize(config StvConfig)
+	Run() ([]Candidate, Events)
 }
 
 type stv struct {
-	Counter Counter
+	StvCounter StvCounter
 }
 
-type StvConfig struct {
-	NumberToElect int
-	Ballots       []*list.List
-	Candidates    []Candidate
-	Precision     int
+func NewStv(stvCounter StvCounter) Stv {
+	s := stv{}
+
+	s.StvCounter = stvCounter
+
+	return &s
 }
 
-func GetScaler(precision int) int64 {
-	var scaler = int64(1)
-	for i := 0; i < precision; i++ {
-		scaler *= 10
+func (s *stv) Initialize(config StvConfig) {
+	s.StvCounter.Initialize(config)
+}
+
+func (s *stv) Run() ([]Candidate, Events) {
+	s.StvCounter.SetInitialQuota()
+
+	s.StvCounter.InitializeVotes()
+
+	for {
+		if s.StvCounter.HasEnded() {
+			break
+		}
+
+		s.StvCounter.UpdateRound()
 	}
 
-	return scaler
+	return s.StvCounter.Results()
 }

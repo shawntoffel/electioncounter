@@ -58,7 +58,8 @@ func main() {
 	config.NumberToElect = 3
 	config.Precision = 6
 
-	var cm = NewMeekStv()
+	var counter = NewMeekStvCounter(nil)
+	var cm = NewStv(counter)
 
 	cm.Initialize(config)
 
