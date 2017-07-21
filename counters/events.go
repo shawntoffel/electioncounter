@@ -1,4 +1,4 @@
-package main
+package counters
 
 import (
 	"container/list"
@@ -45,7 +45,6 @@ func (e *QuotaUpdated) Transition(c *counter) {
 	c.Quota = e.NewQuota
 	e.Description = fmt.Sprintf("Quota has been updated to %s", Format(e.NewQuota, c.Scaler))
 }
-
 
 type IncrementRound struct {
 	Event

@@ -1,4 +1,4 @@
-package main
+package counters
 
 import (
 	"container/list"

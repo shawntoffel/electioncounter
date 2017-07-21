@@ -1,15 +1,19 @@
-package main
+package electioncounter
+
+import (
+	"github.com/shawntoffel/electioncounter/counters"
+)
 
 type Stv interface {
-	Initialize(config StvConfig)
-	Run() ([]Candidate, Events)
+	Initialize(config counters.StvConfig)
+	Run() ([]counters.Candidate, counters.Events)
 }
 
 type stv struct {
-	StvCounter StvCounter
+	StvCounter counters.StvCounter
 }
 
-func NewStv(stvCounter StvCounter) Stv {
+func NewStv(stvCounter counters.StvCounter) Stv {
 	s := stv{}
 
 	s.StvCounter = stvCounter
@@ -17,11 +21,11 @@ func NewStv(stvCounter StvCounter) Stv {
 	return &s
 }
 
-func (s *stv) Initialize(config StvConfig) {
+func (s *stv) Initialize(config counters.StvConfig) {
 	s.StvCounter.Initialize(config)
 }
 
-func (s *stv) Run() ([]Candidate, Events) {
+func (s *stv) Run() ([]counters.Candidate, counters.Events) {
 	s.StvCounter.SetInitialQuota()
 
 	s.StvCounter.InitializeVotes()

@@ -1,20 +1,22 @@
-package main
+package electioncounter
 
 import (
 	"container/list"
 	"fmt"
+	"github.com/shawntoffel/electioncounter/counters"
+	"testing"
 )
 
-func main() {
+func TestMeekStv(t *testing.T) {
 
-	var config = StvConfig{}
+	var config = counters.StvConfig{}
 
 	names := []string{"Alice", "Bob", "Chris", "Don", "Eric"}
 
 	for _, name := range names {
-		c := Candidate{}
+		c := counters.Candidate{}
 		c.Id = name
-		c.Status = Hopeful
+		c.Status = counters.Hopeful
 
 		config.Candidates = append(config.Candidates, c)
 	}
@@ -58,16 +60,21 @@ func main() {
 	config.NumberToElect = 3
 	config.Precision = 6
 
-	var counter = NewMeekStvCounter(nil)
+	var counter = counters.NewMeekStvCounter(nil)
 	var cm = NewStv(counter)
 
 	cm.Initialize(config)
 
-	var candidates, events = cm.Run()
+	var candidates, _ = cm.Run()
+
+	count := len(candidates)
+	expectedCount := 3
+
+	if count != expectedCount {
+		t.Errorf("Incorrect number of elected candidates. Expected: %d, Got: %d", expectedCount, count)
+	}
 
 	for _, c := range candidates {
 		fmt.Println(c.Id)
 	}
-
-	fmt.Print(events)
 }

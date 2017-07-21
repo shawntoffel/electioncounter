@@ -1,4 +1,4 @@
-package main
+package counters
 
 type Aggregate interface {
 	HandleEvent(event interface{})

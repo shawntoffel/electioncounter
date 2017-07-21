@@ -1,4 +1,4 @@
-package main
+package counters
 
 type Pool interface {
 	SetKeepValue(id string, value int64)
