@@ -1,9 +1,5 @@
 package counters
 
-import (
-	"container/list"
-)
-
 type Events []CounterEvent
 
 type StvCounter interface {
@@ -22,8 +18,6 @@ type stvCounter struct {
 	Changes         Events
 	ExpectedVersion int
 }
-
-type Ballots []*list.List
 
 type StvConfig struct {
 	NumberToElect int
