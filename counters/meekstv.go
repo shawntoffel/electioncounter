@@ -36,20 +36,6 @@ func (state *counter) HandleEvent(event CounterEvent) {
 	event.Transition(state)
 }
 
-func (state *counter) Events() Events {
-	return state.Changes
-}
-
-func (state *counter) SetInitialQuota() {
-	var numBallots = int64(state.Pool.TotalFirstRankCount())
-	var droop = ((numBallots*state.Scaler)/(int64(state.NumberToElect)+1))/state.Scaler*state.Scaler + state.Scaler
-
-	event := QuotaUpdated{}
-	event.NewQuota = droop
-
-	state.HandleEvent(&event)
-}
-
 func (state *counter) Initialize(config StvConfig) {
 	countCreated := CountCreated{}
 	countCreated.Candidates = config.Candidates
@@ -71,12 +57,51 @@ func (state *counter) InitializeVotes() {
 	}
 }
 
+func (state *counter) HasEnded() bool {
+	elected := state.Pool.Elected()
+
+	if len(elected) >= state.NumberToElect {
+		return true
+	}
+
+	for _, c := range elected {
+		var frac = float64(state.Quota) / float64(c.Votes)
+
+		if frac < 0.99999 || frac > 1.00001 {
+			return false
+		}
+	}
+
+	return true
+
+}
+
+func (state *counter) Events() Events {
+	return state.Changes
+}
+
+func (state *counter) Results() ([]Candidate, Events) {
+	return state.Pool.Elected(), state.Changes
+}
+
+func (state *counter) SetInitialQuota() {
+	initialVoteCount := int64(state.Pool.TotalFirstRankCount())
+	numberToElect := int64(state.NumberToElect)
+
+	var droopQuota = ((initialVoteCount * state.Scaler) / (numberToElect + 1)) / state.Scaler * state.Scaler + state.Scaler
+
+	event := QuotaUpdated{}
+	event.NewQuota = droopQuota
+
+	state.HandleEvent(&event)
+}
+
 func (state *counter) UpdateCandidateForRound(candidate Candidate) {
 	if candidate.Votes > state.Quota {
-		var num = state.Quota * candidate.KeepValue
-		var newKeepValue = num / candidate.Votes
+		num := state.Quota * candidate.KeepValue
+		newKeepValue := num / candidate.Votes
 
-		var remainder = num % candidate.Votes
+		remainder := num % candidate.Votes
 
 		if remainder > 0 {
 			newKeepValue += 1
@@ -85,7 +110,7 @@ func (state *counter) UpdateCandidateForRound(candidate Candidate) {
 		state.UpdateCandidateKeepValue(candidate, newKeepValue)
 	}
 
-	var newVotes = int64(candidate.FirstRankCount) * state.Pool.Candidate(candidate.Id).KeepValue
+	newVotes := int64(candidate.FirstRankCount) * state.Pool.Candidate(candidate.Id).KeepValue
 
 	state.UpdateCandidateVotes(candidate, newVotes)
 }
@@ -172,12 +197,12 @@ func (state *counter) DistributeVotes(firstCandidate Candidate, iter *list.Eleme
 
 		iter = iter.Next()
 
-		var currentCandidate = state.Pool.Candidate(iter.Value.(string))
-		var previousCandidate = state.Pool.Candidate(iter.Prev().Value.(string))
+		currentCandidate := state.Pool.Candidate(iter.Value.(string))
+		previousCandidate := state.Pool.Candidate(iter.Prev().Value.(string))
 
 		proportion = proportion * (state.Scaler - previousCandidate.KeepValue) / state.Scaler
 
-		var votesToKeep = (proportion * currentCandidate.KeepValue * initialVoteCount) / state.Scaler
+		votesToKeep := (proportion * currentCandidate.KeepValue * initialVoteCount) / state.Scaler
 
 		state.GiveVotesToCandidate(currentCandidate, votesToKeep)
 
@@ -195,7 +220,7 @@ func (state *counter) UpdateQuota(excess int64) {
 	initialVoteCount := int64(state.Pool.TotalFirstRankCount())
 	numberToElect := int64(state.NumberToElect)
 
-	var quota = ((initialVoteCount - excess) * state.Scaler / (numberToElect + 1)) / state.Scaler * state.Scaler
+	quota := ((initialVoteCount - excess) * state.Scaler / (numberToElect + 1)) / state.Scaler * state.Scaler
 
 	if (state.Quota == quota) {
 		return
@@ -207,34 +232,11 @@ func (state *counter) UpdateQuota(excess int64) {
 	state.HandleEvent(&event)
 }
 
-func (state *counter) HasEnded() bool {
-	elected := state.Pool.Elected()
-
-	if len(elected) >= state.NumberToElect {
-		return true
-	}
-
-	for _, c := range elected {
-		var frac = float64(state.Quota) / float64(c.Votes)
-
-		if frac < 0.99999 || frac > 1.00001 {
-			return false
-		}
-	}
-
-	return true
-
-}
-
-func (state *counter) Results() ([]Candidate, Events) {
-	return state.Pool.Elected(), state.Changes
-}
-
 func (state *counter) RollUpBallots(ballots Ballots) {
 	for _, ballot := range ballots {
-		var first = ballot.Front().Value.(string)
+		first := ballot.Front().Value.(string)
 
-		var candidate = state.Pool.Candidate(first)
+		candidate := state.Pool.Candidate(first)
 		state.Pool.SetFirstRankCount(candidate.Id, candidate.FirstRankCount+1)
 
 		if !Contains(state.Ballots, ballot) {
@@ -248,12 +250,10 @@ func Equal(left *list.List, right *list.List) bool {
 		return false
 	}
 
-	var leftIter = left.Front()
-	var rightIter = right.Front()
+	leftIter := left.Front()
+	rightIter := right.Front()
 
-	var len = left.Len()
-
-	for i := 0; i < len; i++ {
+	for i := 0; i < left.Len(); i++ {
 		if leftIter.Value != rightIter.Value {
 			return false
 		}
