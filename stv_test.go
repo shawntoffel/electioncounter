@@ -63,9 +63,7 @@ func TestMeekStv(t *testing.T) {
 	var counter = counters.NewMeekStvCounter(nil)
 	var cm = NewStv(counter)
 
-	cm.Initialize(config)
-
-	var candidates, events = cm.Run()
+	var candidates, events = cm.Run(config)
 
 	count := len(candidates)
 	expectedCount := 3

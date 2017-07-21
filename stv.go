@@ -5,8 +5,7 @@ import (
 )
 
 type Stv interface {
-	Initialize(config counters.StvConfig)
-	Run() ([]counters.Candidate, counters.Events)
+	Run(config counters.StvConfig) ([]counters.Candidate, counters.Events)
 }
 
 type stv struct {
@@ -14,18 +13,11 @@ type stv struct {
 }
 
 func NewStv(stvCounter counters.StvCounter) Stv {
-	s := stv{}
-
-	s.StvCounter = stvCounter
-
-	return &s
+	return &stv{stvCounter}
 }
 
-func (s *stv) Initialize(config counters.StvConfig) {
+func (s *stv) Run(config counters.StvConfig) ([]counters.Candidate, counters.Events) {
 	s.StvCounter.Initialize(config)
-}
-
-func (s *stv) Run() ([]counters.Candidate, counters.Events) {
 	s.StvCounter.SetInitialQuota()
 
 	s.StvCounter.InitializeVotes()
