@@ -10,8 +10,7 @@ type StvCounter interface {
 	HandleEvent(event CounterEvent)
 	Events() Events
 
-	Initialize(config StvConfig)
-
+	CreateCount(config StvConfig)
 	SetInitialQuota()
 	InitializeVotes()
 	UpdateRound()

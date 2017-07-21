@@ -36,7 +36,7 @@ func (state *counter) HandleEvent(event CounterEvent) {
 	event.Transition(state)
 }
 
-func (state *counter) Initialize(config StvConfig) {
+func (state *counter) CreateCount(config StvConfig) {
 	countCreated := CountCreated{}
 	countCreated.Candidates = config.Candidates
 	countCreated.Precision = config.Precision
@@ -88,7 +88,7 @@ func (state *counter) SetInitialQuota() {
 	initialVoteCount := int64(state.Pool.TotalFirstRankCount())
 	numberToElect := int64(state.NumberToElect)
 
-	var droopQuota = ((initialVoteCount * state.Scaler) / (numberToElect + 1)) / state.Scaler * state.Scaler + state.Scaler
+	var droopQuota = ((initialVoteCount*state.Scaler)/(numberToElect+1))/state.Scaler*state.Scaler + state.Scaler
 
 	event := QuotaUpdated{}
 	event.NewQuota = droopQuota
@@ -116,7 +116,7 @@ func (state *counter) UpdateCandidateForRound(candidate Candidate) {
 }
 
 func (state *counter) UpdateCandidateVotes(candidate Candidate, votes int64) {
-	if (candidate.Votes == votes) {
+	if candidate.Votes == votes {
 		return
 	}
 
@@ -129,7 +129,7 @@ func (state *counter) UpdateCandidateVotes(candidate Candidate, votes int64) {
 	state.ElectCandidateAboveQuota(candidate)
 }
 
-func (state *counter) GiveVotesToCandidate(candidate Candidate, votes int64){
+func (state *counter) GiveVotesToCandidate(candidate Candidate, votes int64) {
 	event := CandidateVotesReceived{}
 	event.Id = candidate.Id
 	event.ReceivedVotes = votes
@@ -222,7 +222,7 @@ func (state *counter) UpdateQuota(excess int64) {
 
 	quota := ((initialVoteCount - excess) * state.Scaler / (numberToElect + 1)) / state.Scaler * state.Scaler
 
-	if (state.Quota == quota) {
+	if state.Quota == quota {
 		return
 	}
 
