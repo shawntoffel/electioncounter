@@ -18,8 +18,6 @@ func NewStv(stvCounter counters.StvCounter) Stv {
 
 func (s *stv) Run(config counters.StvConfig) ([]counters.Candidate, counters.Events) {
 	s.StvCounter.CreateCount(config)
-	s.StvCounter.SetInitialQuota()
-	s.StvCounter.InitializeVotes()
 
 	for {
 		if s.StvCounter.HasEnded() {

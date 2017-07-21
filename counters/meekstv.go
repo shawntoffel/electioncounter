@@ -44,6 +44,9 @@ func (state *counter) CreateCount(config StvConfig) {
 
 	state.HandleEvent(&countCreated)
 	state.RollUpBallots(config.Ballots)
+
+	state.SetInitialQuota()
+	state.InitializeVotes()
 }
 
 func (state *counter) InitializeVotes() {
