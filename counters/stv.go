@@ -4,11 +4,11 @@ import (
 	"container/list"
 )
 
-type Events []interface{}
+type Events []CounterEvent
 
 type StvCounter interface {
 	HandleEvent(event CounterEvent)
-	Events() []interface{}
+	Events() Events
 
 	Initialize(config StvConfig)
 
@@ -17,6 +17,11 @@ type StvCounter interface {
 	UpdateRound()
 	HasEnded() bool
 	Results() ([]Candidate, Events)
+}
+
+type stvCounter struct {
+	Changes         Events
+	ExpectedVersion int
 }
 
 type Ballots []*list.List

@@ -65,7 +65,7 @@ func TestMeekStv(t *testing.T) {
 
 	cm.Initialize(config)
 
-	var candidates, _ = cm.Run()
+	var candidates, events = cm.Run()
 
 	count := len(candidates)
 	expectedCount := 3
@@ -76,5 +76,9 @@ func TestMeekStv(t *testing.T) {
 
 	for _, c := range candidates {
 		fmt.Println(c.Id)
+	}
+
+	for _, e := range events {
+		fmt.Println(e.Description())
 	}
 }

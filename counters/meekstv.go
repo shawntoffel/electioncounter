@@ -5,20 +5,11 @@ import (
 )
 
 type MeekStvCounter interface {
-	HandleEvent(event CounterEvent)
-	Events() []interface{}
-
-	Initialize(config StvConfig)
-
-	SetInitialQuota()
-	InitializeVotes()
-	UpdateRound()
-	HasEnded() bool
-	Results() ([]Candidate, Events)
+	StvCounter
 }
 
 type counter struct {
-	aggregate
+	stvCounter
 
 	Quota         int64
 	Precision     int
@@ -45,7 +36,7 @@ func (state *counter) HandleEvent(event CounterEvent) {
 	event.Transition(state)
 }
 
-func (state *counter) Events() []interface{} {
+func (state *counter) Events() Events {
 	return state.Changes
 }
 
@@ -77,10 +68,6 @@ func (state *counter) InitializeVotes() {
 
 		state.UpdateCandidateVotes(c, votes)
 		state.Pool.SetKeepValue(c.Id, state.Scaler)
-
-		if state.Pool.Candidate(c.Id).Votes > state.Quota {
-			state.ElectCandidate(c)
-		}
 	}
 }
 
@@ -96,8 +83,6 @@ func (state *counter) UpdateCandidateForRound(candidate Candidate) {
 		}
 
 		state.UpdateCandidateKeepValue(candidate, newKeepValue)
-
-		state.ElectCandidate(candidate)
 	}
 
 	var newVotes = int64(candidate.FirstRankCount) * state.Pool.Candidate(candidate.Id).KeepValue
@@ -106,12 +91,36 @@ func (state *counter) UpdateCandidateForRound(candidate Candidate) {
 }
 
 func (state *counter) UpdateCandidateVotes(candidate Candidate, votes int64) {
+	if (candidate.Votes == votes) {
+		return
+	}
+
 	event := CandidateVotesUpdated{}
 	event.Id = candidate.Id
 	event.NewVotes = votes
 
 	state.HandleEvent(&event)
 
+	state.ElectCandidateAboveQuota(candidate)
+}
+
+func (state *counter) GiveVotesToCandidate(candidate Candidate, votes int64){
+	event := CandidateVotesReceived{}
+	event.Id = candidate.Id
+	event.ReceivedVotes = votes
+
+	state.HandleEvent(&event)
+
+	state.ElectCandidateAboveQuota(candidate)
+}
+
+func (state *counter) ElectCandidateAboveQuota(candidate Candidate) {
+	updatedCandidate := state.Pool.Candidate(candidate.Id)
+	isElected := updatedCandidate.Status == Elected
+
+	if !isElected && updatedCandidate.Votes > state.Quota {
+		state.ElectCandidate(candidate)
+	}
 }
 
 func (state *counter) UpdateCandidateKeepValue(candidate Candidate, keepValue int64) {
@@ -142,25 +151,19 @@ func (state *counter) UpdateRound() {
 			continue
 		}
 
-		var iter = ballot.Front()
+		iter := ballot.Front()
 
-		var topNode = state.Pool.Candidate(iter.Value.(string))
+		firstPriorityCandidate := state.Pool.Candidate(iter.Value.(string))
 
-		var multiplier = state.Scaler
-
-		state.DistributeVotes(topNode, iter, multiplier)
-
+		state.DistributeVotes(firstPriorityCandidate, iter)
 	}
-
-	for _, c := range state.Pool.Candidates() {
-		if c.Votes > state.Quota {
-			state.ElectCandidate(c)
-		}
-	}
-
 }
 
-func (state *counter) DistributeVotes(firstCandidate Candidate, iter *list.Element, multiplier int64) {
+func (state *counter) DistributeVotes(firstCandidate Candidate, iter *list.Element) {
+
+	state.HandleEvent(&DistributeVotes{})
+	proportion := state.Scaler
+	initialVoteCount := int64(firstCandidate.FirstRankCount)
 
 	for {
 		if iter.Next() == nil {
@@ -172,14 +175,14 @@ func (state *counter) DistributeVotes(firstCandidate Candidate, iter *list.Eleme
 		var currentCandidate = state.Pool.Candidate(iter.Value.(string))
 		var previousCandidate = state.Pool.Candidate(iter.Prev().Value.(string))
 
-		multiplier = multiplier * (state.Scaler - previousCandidate.KeepValue) / state.Scaler
+		proportion = proportion * (state.Scaler - previousCandidate.KeepValue) / state.Scaler
 
-		var votes = currentCandidate.Votes + (multiplier*currentCandidate.KeepValue*int64(firstCandidate.FirstRankCount))/state.Scaler
+		var votesToKeep = (proportion * currentCandidate.KeepValue * initialVoteCount) / state.Scaler
 
-		state.UpdateCandidateVotes(currentCandidate, votes)
+		state.GiveVotesToCandidate(currentCandidate, votesToKeep)
 
 		if iter.Next() == nil {
-			var excess = multiplier * (state.Scaler - currentCandidate.KeepValue)
+			var excess = proportion * (state.Scaler - currentCandidate.KeepValue)
 
 			state.UpdateQuota(excess)
 		}
@@ -189,9 +192,14 @@ func (state *counter) DistributeVotes(firstCandidate Candidate, iter *list.Eleme
 
 func (state *counter) UpdateQuota(excess int64) {
 
-	var numVotes = int64(state.Pool.TotalFirstRankCount())
+	initialVoteCount := int64(state.Pool.TotalFirstRankCount())
+	numberToElect := int64(state.NumberToElect)
 
-	var quota = ((numVotes - excess) * state.Scaler / (int64(state.NumberToElect) + 1)) / state.Scaler * state.Scaler
+	var quota = ((initialVoteCount - excess) * state.Scaler / (numberToElect + 1)) / state.Scaler * state.Scaler
+
+	if (state.Quota == quota) {
+		return
+	}
 
 	event := QuotaUpdated{}
 	event.NewQuota = quota
