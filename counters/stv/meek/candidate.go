@@ -1,4 +1,8 @@
-package counters
+package meek
+
+import (
+	"github.com/shawntoffel/electioncounter/counters"
+)
 
 type CandidateStatus int
 
@@ -9,9 +13,9 @@ const (
 )
 
 type Candidate struct {
-	Id             string
+	counters.Candidate
 	Status         CandidateStatus
-	KeepValue      int64
+	Weight         int64
 	Votes          int64
 	FirstRankCount int
 }

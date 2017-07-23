@@ -1,19 +1,21 @@
 package counters
 
-type Ballots []*list.List
+import (
+	"container/list"
+)
+
 type Counter interface {
-	CreateCount(countConfig CountConfig)
+	Create(counterConfig CounterConfig)
 	UpdateRound()
 	HasEnded() bool
-	Results() []Result
+	Result() Result
 }
 
-type CountConfig struct {
-}
-
-type Result struct {
-	Candidates []Candidate
-	Events     []Event
+type CounterConfig struct {
+	NumberToElect int
+	Ballots       Ballots
+	Candidates    []Candidate
+	Precision     int
 }
 
 type Candidate struct {
@@ -21,11 +23,19 @@ type Candidate struct {
 	Name string
 }
 
+type Ballots []*list.List
+
+type Events []Event
 type Event struct {
 	Description string
 }
 
+type Result struct {
+	Candidates []Candidate
+	Events     []Event
+}
+
 type counter struct {
-	Changes         Events
+	Changes         []Event
 	ExpectedVersion int
 }
