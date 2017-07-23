@@ -1,17 +1,13 @@
 package counters
 
-type Events []CounterEvent
-
 type StvCounter interface {
-	HandleEvent(event CounterEvent)
-	Events() Events
-
 	CreateCount(config StvConfig)
 	SetInitialQuota()
 	InitializeVotes()
 	UpdateRound()
 	HasEnded() bool
-	Results() ([]Candidate, Events)
+	Results() ([]Result, Events)
+	Events() []Event
 }
 
 type stvCounter struct {
@@ -24,6 +20,11 @@ type StvConfig struct {
 	Ballots       Ballots
 	Candidates    []Candidate
 	Precision     int
+}
+
+type Result struct {
+	CandidateId string
+	Votes       int64
 }
 
 func GetScaler(precision int) int64 {

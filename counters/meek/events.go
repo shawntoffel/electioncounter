@@ -5,44 +5,6 @@ import (
 	"fmt"
 )
 
-type Event struct {
-	CounterEvent
-	EventDescription string
-}
-
-func (e Event) Transition(c *counter) {}
-
-type CounterEvent interface {
-	Transition(c *counter)
-	Description() string
-}
-
-type CountCreated struct {
-	Event
-
-	NumberToElect int
-	Ballots       []*list.List
-	Candidates    []Candidate
-	Precision     int
-}
-
-func (e *CountCreated) Transition(c *counter) {
-	c.NumberToElect = e.NumberToElect
-	c.Ballots = e.Ballots
-
-	c.Precision = e.Precision
-	c.Pool = NewPool(e.Candidates)
-
-	c.Scaler = GetScaler(c.Precision)
-
-	e.EventDescription = "A new count has started"
-}
-
-
-func (e *Event) Description() string {
-	return e.EventDescription
-}
-
 type QuotaUpdated struct {
 	Event
 	NewQuota int64
@@ -88,7 +50,7 @@ func (e *CandidateVotesUpdated) Transition(c *counter) {
 
 type CandidateVotesReceived struct {
 	Event
-	Id       string
+	Id            string
 	ReceivedVotes int64
 }
 

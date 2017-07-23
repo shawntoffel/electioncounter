@@ -4,8 +4,6 @@ import (
 	"container/list"
 )
 
-type Ballots []*list.List
-
 func Equal(left *list.List, right *list.List) bool {
 	if left.Len() != right.Len() {
 		return false
