@@ -68,6 +68,7 @@ func (state *counter) InitializeVotes() {
 		var votes = int64(c.FirstRankCount) * state.Scaler
 
 		state.UpdateCandidateVotes(c, votes)
+		state.ElectCandidateAboveQuota(c)
 		state.Pool.SetKeepValue(c.Id, state.Scaler)
 	}
 }
@@ -116,6 +117,7 @@ func (state *counter) UpdateCandidateForRound(candidate Candidate) {
 	newVotes := int64(candidate.FirstRankCount) * state.Pool.Candidate(candidate.Id).KeepValue
 
 	state.UpdateCandidateVotes(candidate, newVotes)
+	state.ElectCandidateAboveQuota(candidate)
 }
 
 func (state *counter) UpdateCandidateVotes(candidate Candidate, votes int64) {
@@ -129,7 +131,7 @@ func (state *counter) UpdateCandidateVotes(candidate Candidate, votes int64) {
 
 	state.HandleEvent(&event)
 
-	state.ElectCandidateAboveQuota(candidate)
+	//	state.ElectCandidateAboveQuota(candidate)
 }
 
 func (state *counter) GiveVotesToCandidate(candidate Candidate, votes int64) {
@@ -139,7 +141,7 @@ func (state *counter) GiveVotesToCandidate(candidate Candidate, votes int64) {
 
 	state.HandleEvent(&event)
 
-	state.ElectCandidateAboveQuota(candidate)
+	//	state.ElectCandidateAboveQuota(candidate)
 }
 
 func (state *counter) ElectCandidateAboveQuota(candidate Candidate) {
@@ -185,6 +187,33 @@ func (state *counter) UpdateRound() {
 
 		state.DistributeVotes(firstPriorityCandidate, iter)
 	}
+
+	surplus := int64(0)
+
+	for _, c := range state.Pool.Candidates() {
+		state.ElectCandidateAboveQuota(c)
+
+		if c.Votes > state.Quota {
+			surplus = +(c.Votes - state.Quota)
+		}
+	}
+
+	sorted := state.Pool.SortedCandidates()
+	for i := len(sorted) - 1; i >= 0; i-- {
+		diff := sorted[i-1].Votes - sorted[i].Votes
+
+		if diff < surplus {
+			state.ExcludeCandidate(sorted[i])
+		}
+
+	}
+}
+
+func (state *counter) ExcludeCandidate(c Candidate) {
+	e := ExcludeCandidate{}
+	e.Id = c.Id
+
+	state.HandleEvent(&e)
 }
 
 func (state *counter) DistributeVotes(firstCandidate Candidate, iter *list.Element) {
@@ -201,6 +230,11 @@ func (state *counter) DistributeVotes(firstCandidate Candidate, iter *list.Eleme
 		iter = iter.Next()
 
 		currentCandidate := state.Pool.Candidate(iter.Value.(string))
+
+		if currentCandidate.Status == Excluded {
+			continue
+		}
+
 		previousCandidate := state.Pool.Candidate(iter.Prev().Value.(string))
 
 		proportion = proportion * (state.Scaler - previousCandidate.KeepValue) / state.Scaler

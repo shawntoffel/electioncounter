@@ -1,11 +1,16 @@
 package counters
 
+import (
+	"sort"
+)
+
 type Pool interface {
 	SetKeepValue(id string, value int64)
 	SetVotes(id string, value int64)
 	SetStatus(id string, status CandidateStatus)
 	Candidate(id string) Candidate
 	Candidates() []Candidate
+	SortedCandidates() []Candidate
 	Elected() []Candidate
 	TotalFirstRankCount() int
 	SetFirstRankCount(id string, count int)
@@ -62,6 +67,30 @@ func (p *pool) Candidates() []Candidate {
 	}
 
 	return candidates
+}
+
+func (p *pool) SortedCandidates() []Candidate {
+	candidates := Candidates{}
+
+	for _, c := range p.CandidatePool {
+		candidates = append(candidates, c)
+	}
+
+	sort.Sort(candidates)
+
+	return candidates
+}
+
+type Candidates []Candidate
+
+func (c Candidates) Len() int {
+	return len(c)
+}
+func (c Candidates) Less(i, j int) bool {
+	return c[i].Votes < c[j].Votes
+}
+func (c Candidates) Swap(i, j int) {
+	c[i], c[j] = c[j], c[i]
 }
 
 func (p *pool) Elected() []Candidate {
