@@ -16,6 +16,7 @@ type CounterConfig struct {
 	Ballots       Ballots
 	Candidates    Candidates
 	Precision     int
+	Withdrawl     []string
 }
 
 type Candidates []Candidate

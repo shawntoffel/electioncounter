@@ -7,7 +7,6 @@ import (
 
 type MeekStvCounter interface {
 	stv.StvCounter
-	HandleEvent(event MeekEvent)
 }
 
 type meekStvCounter struct {
@@ -21,20 +20,15 @@ func NewMeekStvCounter(events []MeekEvent) MeekStvCounter {
 	m := meekStvCounter{}
 	m.Pool = NewPool(NewMemoryStorage())
 	for _, event := range events {
-		m.HandleEvent(event)
+		HandleEvent(&m, event)
 		m.ExpectedVersion++
 	}
 	return &m
 }
 
 func (state *meekStvCounter) Create(counterConfig counters.CounterConfig) {
-	createCount := CreateCount{}
-	createCount.Candidates = counterConfig.Candidates
-	createCount.Ballots = counterConfig.Ballots
-	createCount.Precision = counterConfig.Precision
-	createCount.NumberToElect = counterConfig.NumberToElect
+	createCount(state, counterConfig)
 
-	state.HandleEvent(&createCount)
 }
 
 func (state *meekStvCounter) UpdateRound() {}
@@ -48,14 +42,4 @@ func (state *meekStvCounter) Result() counters.Result {
 	result.Events = state.Changes
 
 	return result
-}
-
-func (state *meekStvCounter) HandleEvent(event MeekEvent) {
-
-	description := event.Transition(state)
-
-	counterEvent := counters.Event{}
-	counterEvent.Description = description
-
-	state.Changes = append(state.Changes, counterEvent)
 }

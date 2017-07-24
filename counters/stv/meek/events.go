@@ -20,9 +20,10 @@ type CreateCount struct {
 func (e *CreateCount) Transition(state *meekStvCounter) string {
 	state.NumberToElect = e.NumberToElect
 	state.Precision = e.Precision
-
 	state.Pool.AddNewCandidates(e.Candidates)
 	state.Ballots = counters.Rollup(e.Ballots)
+
+	state.Scale = int64(Pow(10, state.Precision))
 
 	buffer := bytes.Buffer{}
 
