@@ -52,10 +52,10 @@ func (state *meekStvCounter) Result() counters.Result {
 
 func (state *meekStvCounter) HandleEvent(event MeekEvent) {
 
-	event.Transition(state)
+	description := event.Transition(state)
 
 	counterEvent := counters.Event{}
-	counterEvent.Description = event.Describe()
+	counterEvent.Description = description
 
 	state.Changes = append(state.Changes, counterEvent)
 }
