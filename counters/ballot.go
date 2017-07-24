@@ -33,3 +33,47 @@ func Contains(ballots Ballots, ballot *list.List) bool {
 
 	return false
 }
+
+func ContainsValue(ballots map[int]Ballot, ballot Ballot) (bool, int) {
+	for i, b := range ballots {
+		if Equal(b, ballot) {
+			return true, i
+		}
+	}
+
+	return false, 0
+}
+
+type RolledUpBallots []RolledUpBallot
+type RolledUpBallot struct {
+	Count  int
+	Ballot Ballot
+}
+
+func Rollup(ballots Ballots) []RolledUpBallot {
+	counter := make(map[int]int)
+	rolledUp := make(map[int]Ballot)
+
+	for _, ballot := range ballots {
+		contains, index := ContainsValue(rolledUp, ballot)
+
+		if contains {
+			counter[index] = counter[index] + 1
+		} else {
+			rolledUp[len(rolledUp)+1] = ballot
+		}
+	}
+
+	results := []RolledUpBallot{}
+
+	for i, ballot := range rolledUp {
+		result := RolledUpBallot{}
+
+		result.Count = counter[i]
+		result.Ballot = ballot
+
+		results = append(results, result)
+	}
+
+	return results
+}

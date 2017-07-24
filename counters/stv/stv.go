@@ -8,11 +8,11 @@ type StvCounter interface {
 	counters.Counter
 }
 
-type stvCounter struct {
+type Stv struct {
 	Quota           int64
 	Round           int
 	NumberToElect   int
-	Ballots         []*list.List
+	Ballots         counters.RolledUpBallots
 	Changes         counters.Events
 	ExpectedVersion int
 }

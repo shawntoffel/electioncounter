@@ -1,39 +1,59 @@
 package meek
 
 import (
-	"sort"
+	"github.com/shawntoffel/electioncounter/counters"
+	//"sort"
 )
 
+type PoolStorage interface {
+	Candidate(id string) MeekCandidate
+	Candidates() []MeekCandidate
+	SaveCandidate(candidate MeekCandidate)
+}
+
 type Pool interface {
-	SetKeepValue(id string, value int64)
-	SetVotes(id string, value int64)
-	SetStatus(id string, status CandidateStatus)
-	Candidate(id string) Candidate
-	Candidates() []Candidate
-	SortedCandidates() []Candidate
-	Elected() []Candidate
-	TotalFirstRankCount() int
-	SetFirstRankCount(id string, count int)
+	Candidate(id string) MeekCandidate
+	Candidates() []MeekCandidate
+	AddNewCandidates(candidates counters.Candidates)
+	//SetKeepValue(id string, value int64)
+	//SetVotes(id string, value int64)
+	//SetStatus(id string, status CandidateStatus)
+	//SortedCandidates() []Candidate
+	//Elected() []Candidate
+	//TotalFirstRankCount() int
+	//SetFirstRankCount(id string, count int)
 }
 
 type pool struct {
-	CandidatePool map[string]Candidate
+	Storage PoolStorage
 }
 
-func NewPool(candidates []Candidate) Pool {
-	pool := pool{}
-	pool.CandidatePool = make(map[string]Candidate)
+func NewPool(storage PoolStorage) Pool {
+	return &pool{storage}
+}
 
+func (p *pool) Candidate(id string) MeekCandidate {
+	return p.Storage.Candidate(id)
+}
+
+func (p *pool) Candidates() []MeekCandidate {
+	return p.Storage.Candidates()
+}
+
+func (p *pool) AddNewCandidates(candidates counters.Candidates) {
 	for _, c := range candidates {
-		pool.CandidatePool[c.Id] = c
+		meekCandidate := MeekCandidate{}
+		meekCandidate.Id = c.Id
+		meekCandidate.Name = c.Name
+		meekCandidate.Weight = 1
+		meekCandidate.Status = Hopeful
+		meekCandidate.Votes = 0
+
+		p.Storage.SaveCandidate(meekCandidate)
 	}
-
-	return &pool
 }
 
-func (p *pool) Candidate(id string) Candidate {
-	return p.CandidatePool[id]
-}
+/*
 
 func (p *pool) SetKeepValue(id string, value int64) {
 	c := p.Candidate(id)
@@ -122,3 +142,4 @@ func (p *pool) SetFirstRankCount(id string, count int) {
 
 	p.CandidatePool[id] = c
 }
+*/

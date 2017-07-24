@@ -9,19 +9,20 @@ import (
 
 func TestMeekStv(t *testing.T) {
 
-	var config = counters.StvConfig{}
+	var config = Config{}
+	config.Method = "meek stv"
 
 	names := []string{"Alice", "Bob", "Chris", "Don", "Eric"}
 
 	for _, name := range names {
 		c := counters.Candidate{}
 		c.Id = name
-		c.Status = counters.Hopeful
+		c.Name = name
 
 		config.Candidates = append(config.Candidates, c)
 	}
 
-	var ballots []*list.List
+	var ballots counters.Ballots
 
 	for i := 0; i < 28; i++ {
 		var ballot = list.New()
@@ -60,23 +61,24 @@ func TestMeekStv(t *testing.T) {
 	config.NumberToElect = 3
 	config.Precision = 6
 
-	var counter = counters.NewMeekStvCounter(nil)
-	var cm = NewStv(counter)
+	var cm = NewElectionCounter()
 
-	var candidates, events = cm.Run(config)
+	var result, err = cm.Count(config)
 
-	count := len(candidates)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	fmt.Println("Events:", len(result.Events))
+
+	for _, e := range result.Events {
+		fmt.Println(e.Description)
+	}
+
+	count := len(result.Candidates)
 	expectedCount := 3
 
 	if count != expectedCount {
 		t.Errorf("Incorrect number of elected candidates. Expected: %d, Got: %d", expectedCount, count)
-	}
-
-	for _, c := range candidates {
-		fmt.Println(c.Id)
-	}
-
-	for _, e := range events {
-		fmt.Println(e.Description())
 	}
 }

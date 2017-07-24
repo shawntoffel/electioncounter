@@ -1,29 +1,25 @@
 package meek
 
 import (
-	"container/list"
 	"github.com/shawntoffel/electioncounter/counters"
+	"github.com/shawntoffel/electioncounter/counters/stv"
 )
 
 type MeekStvCounter interface {
-	StvCounter
+	stv.StvCounter
 	HandleEvent(event MeekEvent)
 }
 
 type meekStvCounter struct {
-	stvCounter
+	stv.Stv
 	Pool      Pool
 	Precision int
-	Scaler    int64
-}
-
-type MeekEvent interface {
-	Transition(m *meekStvCounter)
-	Describe() string
+	Scale     int64
 }
 
 func NewMeekStvCounter(events []MeekEvent) MeekStvCounter {
 	m := meekStvCounter{}
+	m.Pool = NewPool(NewMemoryStorage())
 	for _, event := range events {
 		m.HandleEvent(event)
 		m.ExpectedVersion++
@@ -32,7 +28,13 @@ func NewMeekStvCounter(events []MeekEvent) MeekStvCounter {
 }
 
 func (state *meekStvCounter) Create(counterConfig counters.CounterConfig) {
+	createCount := CreateCount{}
+	createCount.Candidates = counterConfig.Candidates
+	createCount.Ballots = counterConfig.Ballots
+	createCount.Precision = counterConfig.Precision
+	createCount.NumberToElect = counterConfig.NumberToElect
 
+	state.HandleEvent(&createCount)
 }
 
 func (state *meekStvCounter) UpdateRound() {}
@@ -49,10 +51,11 @@ func (state *meekStvCounter) Result() counters.Result {
 }
 
 func (state *meekStvCounter) HandleEvent(event MeekEvent) {
+
+	event.Transition(state)
+
 	counterEvent := counters.Event{}
 	counterEvent.Description = event.Describe()
 
 	state.Changes = append(state.Changes, counterEvent)
-
-	event.Transition(state)
 }

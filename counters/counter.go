@@ -14,15 +14,17 @@ type Counter interface {
 type CounterConfig struct {
 	NumberToElect int
 	Ballots       Ballots
-	Candidates    []Candidate
+	Candidates    Candidates
 	Precision     int
 }
 
+type Candidates []Candidate
 type Candidate struct {
 	Id   string
 	Name string
 }
 
+type Ballot *list.List
 type Ballots []*list.List
 
 type Events []Event
@@ -31,8 +33,8 @@ type Event struct {
 }
 
 type Result struct {
-	Candidates []Candidate
-	Events     []Event
+	Candidates Candidates
+	Events     Events
 }
 
 type counter struct {

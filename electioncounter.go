@@ -1,8 +1,6 @@
 package electioncounter
 
 import (
-	"container/list"
-
 	"github.com/shawntoffel/electioncounter/counters"
 )
 
@@ -15,7 +13,7 @@ type Config struct {
 }
 
 type ElectionCounter interface {
-	Count(config Config) []Result
+	Count(config Config) (*counters.Result, error)
 }
 
 type electionCounter struct {
@@ -25,9 +23,21 @@ func NewElectionCounter() ElectionCounter {
 	return &electionCounter{}
 }
 
-func (c *electionCounter) Count(config Config) {
-	counterFactory := counters.NewCounterFactory()
-	counter := counterFactory.GetCounter(config.Name)
+func (c *electionCounter) Count(config Config) (*counters.Result, error) {
+	counterFactory := NewCounterFactory()
+	counter, err := counterFactory.GetCounter(config.Method)
+
+	if err != nil {
+		return nil, err
+	}
+
+	counterConfig := counters.CounterConfig{}
+	counterConfig.NumberToElect = config.NumberToElect
+	counterConfig.Ballots = config.Ballots
+	counterConfig.Candidates = config.Candidates
+	counterConfig.Precision = config.Precision
+
+	counter.Create(counterConfig)
 
 	for {
 		if counter.HasEnded() {
@@ -37,5 +47,6 @@ func (c *electionCounter) Count(config Config) {
 		counter.UpdateRound()
 	}
 
-	return counter.Results()
+	result := counter.Result()
+	return &result, nil
 }

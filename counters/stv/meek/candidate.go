@@ -12,10 +12,9 @@ const (
 	Excluded CandidateStatus = iota
 )
 
-type Candidate struct {
+type MeekCandidate struct {
 	counters.Candidate
-	Status         CandidateStatus
-	Weight         int64
-	Votes          int64
-	FirstRankCount int
+	Status CandidateStatus
+	Weight int64
+	Votes  int64
 }
