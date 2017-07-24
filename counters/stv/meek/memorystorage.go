@@ -28,3 +28,13 @@ func (s *poolStorage) Candidates() []MeekCandidate {
 func (s *poolStorage) SaveCandidate(candidate MeekCandidate) {
 	s.Store[candidate.Id] = candidate
 }
+
+func (s *poolStorage) Exclude(id string) {
+	candidate := s.Candidate(id)
+
+	candidate.Weight = 0
+
+	candidate.Status = Excluded
+
+	s.SaveCandidate(candidate)
+}

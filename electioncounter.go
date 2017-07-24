@@ -10,6 +10,7 @@ type Config struct {
 	Candidates    []counters.Candidate
 	Precision     int
 	Method        string
+	Withdrawl     []string
 }
 
 type ElectionCounter interface {
@@ -35,6 +36,7 @@ func (c *electionCounter) Count(config Config) (*counters.Result, error) {
 	counterConfig.NumberToElect = config.NumberToElect
 	counterConfig.Ballots = config.Ballots
 	counterConfig.Candidates = config.Candidates
+	counterConfig.Withdrawl = config.Withdrawl
 	counterConfig.Precision = config.Precision
 
 	counter.Create(counterConfig)

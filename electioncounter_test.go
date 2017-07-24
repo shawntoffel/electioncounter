@@ -12,7 +12,7 @@ func TestMeekStv(t *testing.T) {
 	var config = Config{}
 	config.Method = "meek stv"
 
-	names := []string{"Alice", "Bob", "Chris", "Don", "Eric"}
+	names := []string{"Alice", "Bob", "Chris", "Don", "Eric", "Frank"}
 
 	for _, name := range names {
 		c := counters.Candidate{}
@@ -57,6 +57,7 @@ func TestMeekStv(t *testing.T) {
 	ballots = append(ballots, ballot)
 
 	config.Ballots = ballots
+	config.Withdrawl = []string{"Frank"}
 
 	config.NumberToElect = 3
 	config.Precision = 6

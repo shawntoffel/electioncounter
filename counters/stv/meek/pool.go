@@ -8,6 +8,7 @@ import (
 type PoolStorage interface {
 	Candidate(id string) MeekCandidate
 	Candidates() []MeekCandidate
+	Exclude(id string)
 	SaveCandidate(candidate MeekCandidate)
 }
 
@@ -15,6 +16,7 @@ type Pool interface {
 	Candidate(id string) MeekCandidate
 	Candidates() []MeekCandidate
 	AddNewCandidates(candidates counters.Candidates)
+	Exclude(id string)
 	//SetKeepValue(id string, value int64)
 	//SetVotes(id string, value int64)
 	//SetStatus(id string, status CandidateStatus)
@@ -51,6 +53,10 @@ func (p *pool) AddNewCandidates(candidates counters.Candidates) {
 
 		p.Storage.SaveCandidate(meekCandidate)
 	}
+}
+
+func (p *pool) Exclude(id string) {
+	p.Storage.Exclude(id)
 }
 
 /*

@@ -28,7 +28,7 @@ func NewMeekStvCounter(events []MeekEvent) MeekStvCounter {
 
 func (state *meekStvCounter) Create(counterConfig counters.CounterConfig) {
 	createCount(state, counterConfig)
-
+	withdrawlCandidates(state, counterConfig.Withdrawl)
 }
 
 func (state *meekStvCounter) UpdateRound() {}

@@ -5,17 +5,20 @@ import (
 )
 
 func createCount(state *meekStvCounter, counterConfig counters.CounterConfig) {
-	createCount := CreateCount{}
-	createCount.Candidates = counterConfig.Candidates
-	createCount.Ballots = counterConfig.Ballots
-	createCount.Precision = counterConfig.Precision
-	createCount.NumberToElect = counterConfig.NumberToElect
+	event := CreateCount{}
+	event.Candidates = counterConfig.Candidates
+	event.Ballots = counterConfig.Ballots
+	event.Precision = counterConfig.Precision
+	event.NumberToElect = counterConfig.NumberToElect
 
-	HandleEvent(state, &createCount)
+	HandleEvent(state, &event)
 }
 
 func withdrawlCandidates(state *meekStvCounter, ids []string) {
+	event := WithdrawlCandidates{}
+	event.Ids = ids
 
+	HandleEvent(state, &event)
 }
 
 func HandleEvent(state *meekStvCounter, event MeekEvent) {
