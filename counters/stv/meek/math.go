@@ -12,3 +12,15 @@ func Pow(a, b int) int {
 	}
 	return p
 }
+
+func Pow64(a, b int) int64 {
+	p := int64(1)
+	for b > 0 {
+		if b&1 != 0 {
+			p *= a
+		}
+		b >>= 1
+		a *= a
+	}
+	return p
+}
