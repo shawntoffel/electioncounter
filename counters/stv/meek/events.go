@@ -3,27 +3,28 @@ package meek
 import (
 	"bytes"
 	"fmt"
-	"github.com/shawntoffel/electioncounter/counters"
+	"github.com/shawntoffel/electioncounter/election"
+	"github.com/shawntoffel/math"
 )
 
 type MeekEvent interface {
-	Transition(m *meekStvCounter) string
+	Transition(m *meekStv) string
 }
 
 type CreateCount struct {
 	NumberToElect int
-	Ballots       counters.Ballots
-	Candidates    counters.Candidates
+	Ballots       election.Ballots
+	Candidates    election.Candidates
 	Precision     int
 }
 
-func (e *CreateCount) Transition(state *meekStvCounter) string {
+func (e *CreateCount) Transition(state *meekStv) string {
 	state.NumberToElect = e.NumberToElect
 	state.Precision = e.Precision
 	state.Pool.AddNewCandidates(e.Candidates)
-	state.Ballots = counters.Rollup(e.Ballots)
+	state.Ballots = e.Ballots.Rollup()
 
-	state.Scale = int64(Pow(10, state.Precision))
+	state.Scale = int64(math.Pow(10, state.Precision))
 
 	buffer := bytes.Buffer{}
 
@@ -40,7 +41,7 @@ type WithdrawlCandidates struct {
 	Ids []string
 }
 
-func (e *WithdrawlCandidates) Transition(state *meekStvCounter) string {
+func (e *WithdrawlCandidates) Transition(state *meekStv) string {
 	names := []string{}
 
 	for _, id := range e.Ids {

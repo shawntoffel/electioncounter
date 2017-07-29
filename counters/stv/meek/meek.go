@@ -1,45 +1,80 @@
 package meek
 
 import (
-	"github.com/shawntoffel/electioncounter/counters"
 	"github.com/shawntoffel/electioncounter/counters/stv"
+	"github.com/shawntoffel/electioncounter/election"
 )
 
-type MeekStvCounter interface {
-	stv.StvCounter
+type Meek interface {
+	Create(config election.Config)
+	WithdrawlCandidates(ids []string)
+	HasEnded() bool
+	HandleEvent(event MeekEvent)
+	Changes() (election.Events, error)
 }
 
-type meekStvCounter struct {
+type meekStv struct {
 	stv.Stv
 	Pool      Pool
 	Precision int
 	Scale     int64
 }
 
-func NewMeekStvCounter(events []MeekEvent) MeekStvCounter {
-	m := meekStvCounter{}
-	m.Pool = NewPool(NewMemoryStorage())
+func NewMeek(events []MeekEvent) Meek {
+	m := meekStv{}
+	m.Pool = NewPool()
+
 	for _, event := range events {
-		HandleEvent(&m, event)
+		m.HandleEvent(event)
 		m.ExpectedVersion++
 	}
+
 	return &m
 }
 
-func (state *meekStvCounter) Create(counterConfig counters.CounterConfig) {
-	createCount(state, counterConfig)
-	withdrawlCandidates(state, counterConfig.Withdrawl)
+func (m *meekStv) Create(config election.Config) {
+
+	if m.Error != nil {
+		return
+	}
+
+	event := CreateCount{}
+	event.Candidates = config.Candidates
+	event.Ballots = config.Ballots
+	event.Precision = config.Precision
+	event.NumberToElect = config.NumberToElect
+
+	m.HandleEvent(&event)
 }
 
-func (state *meekStvCounter) UpdateRound() {}
+func (m *meekStv) WithdrawlCandidates(ids []string) {
+	if m.Error != nil {
+		return
+	}
 
-func (state *meekStvCounter) HasEnded() bool {
+	event := WithdrawlCandidates{}
+	event.Ids = ids
+
+	m.HandleEvent(&event)
+}
+
+func (m *meekStv) HasEnded() bool {
+	if m.Error != nil {
+		return true
+	}
+
 	return true
 }
 
-func (state *meekStvCounter) Result() counters.Result {
-	result := counters.Result{}
-	result.Events = state.Changes
+func (m *meekStv) Changes() (election.Events, error) {
+	return m.Events, m.Error
+}
 
-	return result
+func (m *meekStv) HandleEvent(event MeekEvent) {
+	description := event.Transition(m)
+
+	counterEvent := election.Event{}
+	counterEvent.Description = description
+
+	m.Events = append(m.Events, counterEvent)
 }

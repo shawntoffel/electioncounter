@@ -1,48 +1,43 @@
 package meek
 
 import (
-	"github.com/shawntoffel/electioncounter/counters"
-	//"sort"
+	"github.com/shawntoffel/electioncounter/election"
+	"github.com/shawntoffel/memorystorage"
 )
-
-type PoolStorage interface {
-	Candidate(id string) MeekCandidate
-	Candidates() []MeekCandidate
-	Exclude(id string)
-	SaveCandidate(candidate MeekCandidate)
-}
 
 type Pool interface {
 	Candidate(id string) MeekCandidate
-	Candidates() []MeekCandidate
-	AddNewCandidates(candidates counters.Candidates)
+	Candidates() MeekCandidates
+	AddNewCandidates(candidates election.Candidates)
 	Exclude(id string)
-	//SetKeepValue(id string, value int64)
-	//SetVotes(id string, value int64)
-	//SetStatus(id string, status CandidateStatus)
-	//SortedCandidates() []Candidate
-	//Elected() []Candidate
-	//TotalFirstRankCount() int
-	//SetFirstRankCount(id string, count int)
 }
 
 type pool struct {
-	Storage PoolStorage
+	Storage memorystorage.MemoryStorage
 }
 
-func NewPool(storage PoolStorage) Pool {
-	return &pool{storage}
+func NewPool() Pool {
+	p := pool{}
+	p.Storage = memorystorage.NewMemoryStorage()
+	return &p
 }
 
 func (p *pool) Candidate(id string) MeekCandidate {
-	return p.Storage.Candidate(id)
+	return p.Storage.Get(id).(MeekCandidate)
 }
 
-func (p *pool) Candidates() []MeekCandidate {
-	return p.Storage.Candidates()
+func (p *pool) Candidates() MeekCandidates {
+	candidates := MeekCandidates{}
+
+	list := p.Storage.List()
+	for _, candidate := range list {
+		candidates = append(candidates, candidate.(MeekCandidate))
+	}
+
+	return candidates
 }
 
-func (p *pool) AddNewCandidates(candidates counters.Candidates) {
+func (p *pool) AddNewCandidates(candidates election.Candidates) {
 	for _, c := range candidates {
 		meekCandidate := MeekCandidate{}
 		meekCandidate.Id = c.Id
@@ -51,101 +46,13 @@ func (p *pool) AddNewCandidates(candidates counters.Candidates) {
 		meekCandidate.Status = Hopeful
 		meekCandidate.Votes = 0
 
-		p.Storage.SaveCandidate(meekCandidate)
+		p.Storage.Set(meekCandidate.Id, meekCandidate)
 	}
 }
 
 func (p *pool) Exclude(id string) {
-	p.Storage.Exclude(id)
+	candidate := p.Candidate(id)
+	candidate.Weight = 0
+	candidate.Status = Excluded
+	p.Storage.Set(candidate.Id, candidate)
 }
-
-/*
-
-func (p *pool) SetKeepValue(id string, value int64) {
-	c := p.Candidate(id)
-
-	c.KeepValue = value
-
-	p.CandidatePool[id] = c
-}
-
-func (p *pool) SetVotes(id string, value int64) {
-	c := p.Candidate(id)
-
-	c.Votes = value
-
-	p.CandidatePool[id] = c
-}
-
-func (p *pool) SetStatus(id string, status CandidateStatus) {
-	c := p.Candidate(id)
-
-	c.Status = status
-
-	p.CandidatePool[id] = c
-}
-
-func (p *pool) Candidates() []Candidate {
-	candidates := []Candidate{}
-
-	for _, c := range p.CandidatePool {
-		candidates = append(candidates, c)
-	}
-
-	return candidates
-}
-
-func (p *pool) SortedCandidates() []Candidate {
-	candidates := Candidates{}
-
-	for _, c := range p.CandidatePool {
-		candidates = append(candidates, c)
-	}
-
-	sort.Sort(candidates)
-
-	return candidates
-}
-
-type Candidates []Candidate
-
-func (c Candidates) Len() int {
-	return len(c)
-}
-func (c Candidates) Less(i, j int) bool {
-	return c[i].Votes < c[j].Votes
-}
-func (c Candidates) Swap(i, j int) {
-	c[i], c[j] = c[j], c[i]
-}
-
-func (p *pool) Elected() []Candidate {
-	candidates := []Candidate{}
-
-	for _, c := range p.CandidatePool {
-		if c.Status == Elected {
-			candidates = append(candidates, c)
-		}
-	}
-
-	return candidates
-}
-
-func (p *pool) TotalFirstRankCount() int {
-	count := 0
-
-	for _, c := range p.CandidatePool {
-		count += c.FirstRankCount
-	}
-
-	return count
-}
-
-func (p *pool) SetFirstRankCount(id string, count int) {
-	c := p.Candidate(id)
-
-	c.FirstRankCount = count
-
-	p.CandidatePool[id] = c
-}
-*/

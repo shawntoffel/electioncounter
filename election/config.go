@@ -4,6 +4,6 @@ type Config struct {
 	NumberToElect       int
 	Ballots             Ballots
 	Candidates          Candidates
-	WithdrawnCandidates Candidates
+	WithdrawnCandidates []string
 	Precision           int
 }

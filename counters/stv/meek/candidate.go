@@ -12,6 +12,7 @@ const (
 	Excluded CandidateStatus = iota
 )
 
+type MeekCandidates []MeekCandidate
 type MeekCandidate struct {
 	election.Candidate
 	Status CandidateStatus
