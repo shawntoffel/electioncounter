@@ -24,9 +24,6 @@ func (state *meekStvCounter) Initialize(config election.Config) {
 	state.Meek.WithdrawlCandidates(config.WithdrawnCandidates)
 }
 
-func (state *meekStvCounter) CountInitialVotes() {
-}
-
 func (state *meekStvCounter) UpdateRound() {
 }
 

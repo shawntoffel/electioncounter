@@ -6,7 +6,6 @@ import (
 
 type Counter interface {
 	Initialize(config election.Config)
-	CountInitialVotes()
 	UpdateRound()
 	HasEnded() bool
 	Result() (*election.Result, error)
