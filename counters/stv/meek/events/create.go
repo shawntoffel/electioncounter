@@ -1,4 +1,4 @@
-package meek
+package events
 
 import (
 	"bytes"
@@ -7,18 +7,14 @@ import (
 	"github.com/shawntoffel/math"
 )
 
-type MeekEvent interface {
-	Transition(m *meekStv) string
-}
-
-type CreateCount struct {
+type Create struct {
 	NumberToElect int
 	Ballots       election.Ballots
 	Candidates    election.Candidates
 	Precision     int
 }
 
-func (e *CreateCount) Transition(state *meekStv) string {
+func (e *Create) Transition(state *meekState) string {
 	state.NumberToElect = e.NumberToElect
 	state.Precision = e.Precision
 	state.Pool.AddNewCandidates(e.Candidates)
@@ -35,20 +31,4 @@ func (e *CreateCount) Transition(state *meekStv) string {
 	buffer.WriteString(fmt.Sprintf("\nPrecision: %d", state.Precision))
 
 	return buffer.String()
-}
-
-type WithdrawlCandidates struct {
-	Ids []string
-}
-
-func (e *WithdrawlCandidates) Transition(state *meekStv) string {
-	names := []string{}
-
-	for _, id := range e.Ids {
-		c := state.Pool.Candidate(id)
-		names = append(names, c.Name)
-		state.Pool.Exclude(id)
-	}
-
-	return fmt.Sprintf("The following candidates have been excluded: %v", names)
 }

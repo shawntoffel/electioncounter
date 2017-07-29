@@ -1,4 +1,4 @@
-package meek
+package state
 
 import (
 	"github.com/shawntoffel/electioncounter/election"

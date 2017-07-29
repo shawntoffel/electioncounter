@@ -5,7 +5,7 @@ import (
 	"github.com/shawntoffel/electioncounter/election"
 )
 
-type Stv struct {
+type StvState struct {
 	counters.CounterState
 	Quota         int64
 	Round         int
