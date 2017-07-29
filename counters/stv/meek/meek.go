@@ -2,7 +2,7 @@ package meek
 
 import (
 	"github.com/shawntoffel/electioncounter/counters"
-	"github.com/shawntoffel/electioncounter/counters/stv/meek/events"
+	"github.com/shawntoffel/electioncounter/counters/stv/meek/event"
 	"github.com/shawntoffel/electioncounter/election"
 )
 
@@ -11,12 +11,12 @@ type MeekStvCounter interface {
 }
 
 type meekStvCounter struct {
-	Meek events.MeekEventProcessor
+	Meek event.MeekEventProcessor
 }
 
-func NewMeekStvCounter(history []events.MeekEvent) MeekStvCounter {
+func NewMeekStvCounter(history []event.MeekEvent) MeekStvCounter {
 	m := meekStvCounter{}
-	m.Meek = events.NewMeekEventProcessor(history)
+	m.Meek = event.NewMeekEventProcessor(history)
 	return &m
 }
 

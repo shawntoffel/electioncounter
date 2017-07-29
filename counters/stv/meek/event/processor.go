@@ -1,6 +1,7 @@
-package events
+package event
 
 import (
+	"github.com/shawntoffel/electioncounter/counters/stv/meek/event/events"
 	"github.com/shawntoffel/electioncounter/counters/stv/meek/state"
 	"github.com/shawntoffel/electioncounter/election"
 )
@@ -13,25 +14,31 @@ type MeekEventProcessor interface {
 	Changes() (election.Events, error)
 }
 
+type meekEventProcessor struct {
+	Error error
+	State *state.MeekState
+}
+
 func NewMeekEventProcessor(events []MeekEvent) MeekEventProcessor {
-	s := meekState{}
-	s.Pool = state.NewPool()
+	s := meekEventProcessor{}
+	s.State = &state.MeekState{}
+	s.State.Pool = state.NewPool()
 
 	for _, event := range events {
 		s.HandleEvent(event)
-		s.ExpectedVersion++
+		s.State.ExpectedVersion++
 	}
 
 	return &s
 }
 
-func (s *meekState) Create(config election.Config) {
+func (s *meekEventProcessor) Create(config election.Config) {
 
 	if s.Error != nil {
 		return
 	}
 
-	event := Create{}
+	event := events.Create{}
 	event.Candidates = config.Candidates
 	event.Ballots = config.Ballots
 	event.Precision = config.Precision
@@ -40,18 +47,18 @@ func (s *meekState) Create(config election.Config) {
 	s.HandleEvent(&event)
 }
 
-func (s *meekState) WithdrawlCandidates(ids []string) {
+func (s *meekEventProcessor) WithdrawlCandidates(ids []string) {
 	if s.Error != nil {
 		return
 	}
 
-	event := WithdrawlCandidates{}
+	event := events.WithdrawlCandidates{}
 	event.Ids = ids
 
 	s.HandleEvent(&event)
 }
 
-func (s *meekState) HasEnded() bool {
+func (s *meekEventProcessor) HasEnded() bool {
 	if s.Error != nil {
 		return true
 	}
@@ -59,6 +66,6 @@ func (s *meekState) HasEnded() bool {
 	return true
 }
 
-func (s *meekState) Changes() (election.Events, error) {
-	return s.Events, s.Error
+func (s *meekEventProcessor) Changes() (election.Events, error) {
+	return s.State.Events, s.Error
 }

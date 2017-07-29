@@ -2,13 +2,14 @@ package events
 
 import (
 	"fmt"
+	"github.com/shawntoffel/electioncounter/counters/stv/meek/state"
 )
 
 type WithdrawlCandidates struct {
 	Ids []string
 }
 
-func (e *WithdrawlCandidates) Transition(state *meekState) string {
+func (e *WithdrawlCandidates) Transition(state *state.MeekState) string {
 	names := []string{}
 
 	for _, id := range e.Ids {

@@ -3,6 +3,7 @@ package events
 import (
 	"bytes"
 	"fmt"
+	"github.com/shawntoffel/electioncounter/counters/stv/meek/state"
 	"github.com/shawntoffel/electioncounter/election"
 	"github.com/shawntoffel/math"
 )
@@ -14,7 +15,7 @@ type Create struct {
 	Precision     int
 }
 
-func (e *Create) Transition(state *meekState) string {
+func (e *Create) Transition(state *state.MeekState) string {
 	state.NumberToElect = e.NumberToElect
 	state.Precision = e.Precision
 	state.Pool.AddNewCandidates(e.Candidates)
