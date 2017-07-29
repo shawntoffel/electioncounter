@@ -1,31 +1,29 @@
 package electioncounter
 
 import (
-	"container/list"
 	"fmt"
-	"github.com/shawntoffel/electioncounter/counters"
+	"github.com/shawntoffel/electioncounter/election"
 	"testing"
 )
 
 func TestMeekStv(t *testing.T) {
 
-	var config = Config{}
-	config.Method = "meek stv"
+	var config = election.Config{}
 
 	names := []string{"Alice", "Bob", "Chris", "Don", "Eric", "Frank"}
 
 	for _, name := range names {
-		c := counters.Candidate{}
+		c := election.Candidate{}
 		c.Id = name
 		c.Name = name
 
 		config.Candidates = append(config.Candidates, c)
 	}
 
-	var ballots counters.Ballots
+	var ballots election.Ballots
 
 	for i := 0; i < 28; i++ {
-		var ballot = list.New()
+		var ballot = election.NewBallot()
 		ballot.PushBack("Alice")
 		ballot.PushBack("Bob")
 		ballot.PushBack("Chris")
@@ -33,7 +31,7 @@ func TestMeekStv(t *testing.T) {
 	}
 
 	for i := 0; i < 26; i++ {
-		var ballot = list.New()
+		var ballot = election.NewBallot()
 		ballot.PushBack("Bob")
 		ballot.PushBack("Alice")
 		ballot.PushBack("Chris")
@@ -41,30 +39,30 @@ func TestMeekStv(t *testing.T) {
 	}
 
 	for i := 0; i < 3; i++ {
-		var ballot = list.New()
+		var ballot = election.NewBallot()
 		ballot.PushBack("Chris")
 		ballots = append(ballots, ballot)
 	}
 
 	for i := 0; i < 2; i++ {
-		var ballot = list.New()
+		var ballot = election.NewBallot()
 		ballot.PushBack("Don")
 		ballots = append(ballots, ballot)
 	}
 
-	var ballot = list.New()
+	var ballot = election.NewBallot()
 	ballot.PushBack("Eric")
 	ballots = append(ballots, ballot)
 
 	config.Ballots = ballots
-	config.Withdrawl = []string{"Frank"}
+	config.WithdrawnCandidates = []string{"Frank"}
 
 	config.NumberToElect = 3
 	config.Precision = 6
 
 	var cm = NewElectionCounter()
 
-	var result, err = cm.Count(config)
+	var result, err = cm.Count("meek stv", config)
 
 	if err != nil {
 		t.Error(err.Error())

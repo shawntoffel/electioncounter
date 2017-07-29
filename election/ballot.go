@@ -6,7 +6,13 @@ import (
 
 type Ballots []Ballot
 type Ballot struct {
-	*list.List
+	List *list.List
+}
+
+func NewBallot() Ballot {
+	ballot := Ballot{list.New()}
+
+	return ballot
 }
 
 type RolledUpBallots []RolledUpBallot
@@ -15,15 +21,19 @@ type RolledUpBallot struct {
 	Ballot Ballot
 }
 
+func (ballot Ballot) PushBack(value interface{}) {
+	ballot.List.PushBack(value)
+}
+
 func (left Ballot) Equal(right Ballot) bool {
-	if left.Len() != right.Len() {
+	if left.List.Len() != right.List.Len() {
 		return false
 	}
 
-	leftIter := left.Front()
-	rightIter := right.Front()
+	leftIter := left.List.Front()
+	rightIter := right.List.Front()
 
-	for i := 0; i < left.Len(); i++ {
+	for i := 0; i < left.List.Len(); i++ {
 		if leftIter.Value != rightIter.Value {
 			return false
 		}
