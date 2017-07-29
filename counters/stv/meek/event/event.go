@@ -5,5 +5,5 @@ import (
 )
 
 type MeekEvent interface {
-	Transition(m *state.MeekState) string
+	Transition(m *state.MeekState) (string, error)
 }

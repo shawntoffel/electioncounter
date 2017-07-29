@@ -10,7 +10,6 @@ type MeekEventProcessor interface {
 	Create(config election.Config)
 	WithdrawlCandidates(ids []string)
 	HasEnded() bool
-	HandleEvent(event MeekEvent)
 	Changes() (election.Events, error)
 }
 
@@ -25,7 +24,7 @@ func NewMeekEventProcessor(events []MeekEvent) MeekEventProcessor {
 	s.State.Pool = state.NewPool()
 
 	for _, event := range events {
-		s.HandleEvent(event)
+		s.handleEvent(event)
 		s.State.ExpectedVersion++
 	}
 
@@ -44,7 +43,7 @@ func (s *meekEventProcessor) Create(config election.Config) {
 	event.Precision = config.Precision
 	event.NumberToElect = config.NumberToElect
 
-	s.HandleEvent(&event)
+	s.handleEvent(&event)
 }
 
 func (s *meekEventProcessor) WithdrawlCandidates(ids []string) {
@@ -55,7 +54,7 @@ func (s *meekEventProcessor) WithdrawlCandidates(ids []string) {
 	event := events.WithdrawlCandidates{}
 	event.Ids = ids
 
-	s.HandleEvent(&event)
+	s.handleEvent(&event)
 }
 
 func (s *meekEventProcessor) HasEnded() bool {
@@ -68,4 +67,18 @@ func (s *meekEventProcessor) HasEnded() bool {
 
 func (s *meekEventProcessor) Changes() (election.Events, error) {
 	return s.State.Events, s.Error
+}
+
+func (m *meekEventProcessor) handleEvent(event MeekEvent) {
+	description, err := event.Transition(m.State)
+
+	if err != nil {
+		m.Error = err
+		return
+	}
+
+	counterEvent := election.Event{}
+	counterEvent.Description = description
+
+	m.State.Events = append(m.State.Events, counterEvent)
 }

@@ -9,7 +9,7 @@ type WithdrawlCandidates struct {
 	Ids []string
 }
 
-func (e *WithdrawlCandidates) Transition(state *state.MeekState) string {
+func (e *WithdrawlCandidates) Transition(state *state.MeekState) (string, error) {
 	names := []string{}
 
 	for _, id := range e.Ids {
@@ -18,5 +18,5 @@ func (e *WithdrawlCandidates) Transition(state *state.MeekState) string {
 		state.Pool.Exclude(id)
 	}
 
-	return fmt.Sprintf("The following candidates have been excluded: %v", names)
+	return fmt.Sprintf("The following candidates have been excluded: %v", names), nil
 }

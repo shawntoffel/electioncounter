@@ -15,7 +15,7 @@ type Create struct {
 	Precision     int
 }
 
-func (e *Create) Transition(state *state.MeekState) string {
+func (e *Create) Transition(state *state.MeekState) (string, error) {
 	state.NumberToElect = e.NumberToElect
 	state.Precision = e.Precision
 	state.Pool.AddNewCandidates(e.Candidates)
@@ -31,5 +31,5 @@ func (e *Create) Transition(state *state.MeekState) string {
 	buffer.WriteString(fmt.Sprintf("\nWinners: %d", state.NumberToElect))
 	buffer.WriteString(fmt.Sprintf("\nPrecision: %d", state.Precision))
 
-	return buffer.String()
+	return buffer.String(), nil
 }
