@@ -2,17 +2,13 @@ package stv
 
 import (
 	"github.com/shawntoffel/electioncounter/counters"
+	"github.com/shawntoffel/electioncounter/election"
 )
 
-type StvCounter interface {
-	counters.Counter
-}
-
 type Stv struct {
-	Quota           int64
-	Round           int
-	NumberToElect   int
-	Ballots         counters.RolledUpBallots
-	Changes         counters.Events
-	ExpectedVersion int
+	counters.CounterState
+	Quota         int64
+	Round         int
+	NumberToElect int
+	Ballots       election.RolledUpBallots
 }

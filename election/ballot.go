@@ -1,10 +1,21 @@
-package counters
+package election
 
 import (
 	"container/list"
 )
 
-func Equal(left *list.List, right *list.List) bool {
+type Ballots []Ballot
+type Ballot struct {
+	*list.List
+}
+
+type RolledUpBallots []RolledUpBallot
+type RolledUpBallot struct {
+	Count  int
+	Ballot Ballot
+}
+
+func (left Ballot) Equal(right Ballot) bool {
 	if left.Len() != right.Len() {
 		return false
 	}
@@ -24,9 +35,9 @@ func Equal(left *list.List, right *list.List) bool {
 	return true
 }
 
-func Contains(ballots Ballots, ballot *list.List) bool {
+func (ballots Ballots) Contains(ballot Ballot) bool {
 	for _, b := range ballots {
-		if Equal(b, ballot) {
+		if b.Equal(ballot) {
 			return true
 		}
 	}
@@ -36,7 +47,7 @@ func Contains(ballots Ballots, ballot *list.List) bool {
 
 func ContainsValue(ballots map[int]Ballot, ballot Ballot) (bool, int) {
 	for i, b := range ballots {
-		if Equal(b, ballot) {
+		if b.Equal(ballot) {
 			return true, i
 		}
 	}
@@ -44,13 +55,7 @@ func ContainsValue(ballots map[int]Ballot, ballot Ballot) (bool, int) {
 	return false, 0
 }
 
-type RolledUpBallots []RolledUpBallot
-type RolledUpBallot struct {
-	Count  int
-	Ballot Ballot
-}
-
-func Rollup(ballots Ballots) []RolledUpBallot {
+func (ballots Ballots) Rollup() RolledUpBallots {
 	counter := make(map[int]int)
 	rolledUp := make(map[int]Ballot)
 
@@ -64,7 +69,7 @@ func Rollup(ballots Ballots) []RolledUpBallot {
 		}
 	}
 
-	results := []RolledUpBallot{}
+	results := RolledUpBallots{}
 
 	for i, ballot := range rolledUp {
 		result := RolledUpBallot{}

@@ -1,4 +1,4 @@
-package electioncounter
+package factory
 
 import (
 	"errors"
@@ -27,4 +27,10 @@ func (c *counterFactory) GetCounter(name string) (counters.Counter, error) {
 	}
 
 	return nil, errors.New("Unsupported counting method: " + name)
+}
+
+func NewCounter(method string) (counters.Counter, error) {
+	counterFactory := NewCounterFactory()
+
+	return counterFactory.GetCounter(method)
 }

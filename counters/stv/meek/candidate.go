@@ -1,7 +1,7 @@
 package meek
 
 import (
-	"github.com/shawntoffel/electioncounter/counters"
+	"github.com/shawntoffel/electioncounter/election"
 )
 
 type CandidateStatus int
@@ -13,7 +13,7 @@ const (
 )
 
 type MeekCandidate struct {
-	counters.Candidate
+	election.Candidate
 	Status CandidateStatus
 	Weight int64
 	Votes  int64

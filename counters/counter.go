@@ -1,44 +1,19 @@
 package counters
 
 import (
-	"container/list"
+	"github.com/shawntoffel/electioncounter/election"
 )
 
 type Counter interface {
-	Create(counterConfig CounterConfig)
+	Initialize(config election.Config)
+	CountInitialVotes()
 	UpdateRound()
 	HasEnded() bool
-	Result() Result
+	Result() (*election.Result, error)
 }
 
-type CounterConfig struct {
-	NumberToElect int
-	Ballots       Ballots
-	Candidates    Candidates
-	Precision     int
-	Withdrawl     []string
-}
-
-type Candidates []Candidate
-type Candidate struct {
-	Id   string
-	Name string
-}
-
-type Ballot *list.List
-type Ballots []*list.List
-
-type Events []Event
-type Event struct {
-	Description string
-}
-
-type Result struct {
-	Candidates Candidates
-	Events     Events
-}
-
-type counter struct {
-	Changes         []Event
+type CounterState struct {
+	Error           error
+	Changes         election.Events
 	ExpectedVersion int
 }

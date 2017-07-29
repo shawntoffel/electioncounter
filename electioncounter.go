@@ -2,44 +2,29 @@ package electioncounter
 
 import (
 	"github.com/shawntoffel/electioncounter/counters"
+	"github.com/shawntoffel/electioncounter/election"
+	"github.com/shawntoffel/electioncounter/factory"
 )
 
-type Config struct {
-	NumberToElect int
-	Ballots       counters.Ballots
-	Candidates    []counters.Candidate
-	Precision     int
-	Method        string
-	Withdrawl     []string
-}
-
 type ElectionCounter interface {
-	Count(config Config) (*counters.Result, error)
+	Count(method string, config election.Config) (*election.Result, error)
 }
 
-type electionCounter struct {
-}
+type electionCounter struct{}
 
 func NewElectionCounter() ElectionCounter {
 	return &electionCounter{}
 }
 
-func (c *electionCounter) Count(config Config) (*counters.Result, error) {
-	counterFactory := NewCounterFactory()
-	counter, err := counterFactory.GetCounter(config.Method)
+func (c *electionCounter) Count(method string, config election.Config) (*election.Result, error) {
+	counter, err := factory.NewCounter(method)
 
 	if err != nil {
 		return nil, err
 	}
 
-	counterConfig := counters.CounterConfig{}
-	counterConfig.NumberToElect = config.NumberToElect
-	counterConfig.Ballots = config.Ballots
-	counterConfig.Candidates = config.Candidates
-	counterConfig.Withdrawl = config.Withdrawl
-	counterConfig.Precision = config.Precision
-
-	counter.Create(counterConfig)
+	counter.Initialize(config)
+	counter.CountInitialVotes()
 
 	for {
 		if counter.HasEnded() {
@@ -49,6 +34,5 @@ func (c *electionCounter) Count(config Config) (*counters.Result, error) {
 		counter.UpdateRound()
 	}
 
-	result := counter.Result()
-	return &result, nil
+	return counter.Result()
 }
