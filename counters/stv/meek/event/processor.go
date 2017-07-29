@@ -32,11 +32,6 @@ func NewMeekEventProcessor(events []MeekEvent) MeekEventProcessor {
 }
 
 func (s *meekEventProcessor) Create(config election.Config) {
-
-	if s.Error != nil {
-		return
-	}
-
 	event := events.Create{}
 	event.Candidates = config.Candidates
 	event.Ballots = config.Ballots
@@ -47,10 +42,6 @@ func (s *meekEventProcessor) Create(config election.Config) {
 }
 
 func (s *meekEventProcessor) WithdrawlCandidates(ids []string) {
-	if s.Error != nil {
-		return
-	}
-
 	event := events.WithdrawlCandidates{}
 	event.Ids = ids
 
@@ -70,6 +61,10 @@ func (s *meekEventProcessor) Changes() (election.Events, error) {
 }
 
 func (m *meekEventProcessor) handleEvent(event MeekEvent) {
+	if m.Error != nil {
+		return
+	}
+
 	description, err := event.Transition(m.State)
 
 	if err != nil {
