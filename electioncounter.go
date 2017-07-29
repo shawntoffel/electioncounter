@@ -1,7 +1,6 @@
 package electioncounter
 
 import (
-	"github.com/shawntoffel/electioncounter/counters"
 	"github.com/shawntoffel/electioncounter/election"
 	"github.com/shawntoffel/electioncounter/factory"
 )
@@ -24,7 +23,6 @@ func (c *electionCounter) Count(method string, config election.Config) (*electio
 	}
 
 	counter.Initialize(config)
-	counter.CountInitialVotes()
 
 	for {
 		if counter.HasEnded() {
