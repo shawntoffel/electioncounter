@@ -58,8 +58,6 @@ func (s *meekEventProcessor) PerformPreliminaryElection() {
 		event := events.ElectAll{}
 
 		s.handleEvent(&event)
-
-		s.ElectedAll = true
 	}
 }
 
@@ -68,7 +66,7 @@ func (s *meekEventProcessor) HasEnded() bool {
 		return true
 	}
 
-	if s.ElectedAll {
+	if s.State.ElectedAll {
 		return true
 	}
 

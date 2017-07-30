@@ -16,5 +16,7 @@ func (e *ElectAll) Transition(s *state.MeekState) (string, error) {
 		}
 	}
 
+	s.ElectedAll = true
+
 	return "All hopeful candidates have been elected.", nil
 }

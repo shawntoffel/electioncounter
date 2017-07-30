@@ -6,7 +6,8 @@ import (
 
 type MeekState struct {
 	stv.StvState
-	Pool      Pool
-	Precision int
-	Scale     int64
+	Pool       Pool
+	Precision  int
+	Scale      int64
+	ElectedAll bool
 }
