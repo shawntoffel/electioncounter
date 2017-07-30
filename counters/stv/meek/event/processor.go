@@ -77,7 +77,9 @@ func (s *meekEventProcessor) HasEnded() bool {
 }
 
 func (s *meekEventProcessor) ExcludeRemainingCandidates() {
+	event := events.ExcludeRemaining{}
 
+	s.HandleEvent(&event)
 }
 
 func (s *meekEventProcessor) Changes() (election.Events, error) {
