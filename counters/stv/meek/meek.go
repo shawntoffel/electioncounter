@@ -23,7 +23,7 @@ func NewMeekStvCounter(history []event.MeekEvent) MeekStvCounter {
 func (state *meekStvCounter) Initialize(config election.Config) {
 	state.Meek.Create(config)
 	state.Meek.WithdrawlCandidates(config.WithdrawnCandidates)
-	state.Meek.CountIntialVotes()
+	state.Meek.PerformPreliminaryElection()
 }
 
 func (state *meekStvCounter) UpdateRound() {
