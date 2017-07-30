@@ -8,7 +8,12 @@ import (
 type StvState struct {
 	counters.CounterState
 	Quota    int64
-	Round    int
+	Round    StvRound
 	NumSeats int
 	Ballots  election.RolledUpBallots
+}
+
+type StvRound struct {
+	Number     int
+	AnyElected bool
 }

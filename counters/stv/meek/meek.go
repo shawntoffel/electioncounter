@@ -22,11 +22,24 @@ func NewMeekStvCounter(history []event.MeekEvent) MeekStvCounter {
 
 func (state *meekStvCounter) Initialize(config election.Config) {
 	state.Meek.Create(config)
-	state.Meek.WithdrawlCandidates(config.WithdrawnCandidates)
+	state.Meek.ExcludeWithdrawnCandidates(config.WithdrawnCandidates)
 	state.Meek.PerformPreliminaryElection()
 }
 
 func (state *meekStvCounter) UpdateRound() {
+	state.Meek.IncrementRound()
+
+	for {
+		state.Meek.DistributeVotes()
+
+		if state.Meek.RoundHasEnded() {
+			break
+		}
+	}
+
+	if !state.Meek.HasEnded() {
+		state.Meek.ExcludeLowestCandidate()
+	}
 }
 
 func (state *meekStvCounter) HasEnded() bool {

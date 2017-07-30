@@ -8,10 +8,14 @@ import (
 
 type MeekEventProcessor interface {
 	Create(config election.Config)
-	WithdrawlCandidates(ids []string)
+	ExcludeWithdrawnCandidates(ids []string)
+	IncrementRound()
 	PerformPreliminaryElection()
-	HasEnded() bool
 	ExcludeRemainingCandidates()
+	ExcludeLowestCandidate()
+	HasEnded() bool
+	DistributeVotes()
+	RoundHasEnded() bool
 	Changes() (election.Events, error)
 }
 
@@ -23,8 +27,7 @@ type meekEventProcessor struct {
 
 func NewMeekEventProcessor(events []MeekEvent) MeekEventProcessor {
 	s := meekEventProcessor{}
-	s.State = &state.MeekState{}
-	s.State.Pool = state.NewPool()
+	s.State = state.NewMeekState()
 
 	for _, event := range events {
 		s.handleEvent(event)
@@ -44,7 +47,7 @@ func (s *meekEventProcessor) Create(config election.Config) {
 	s.handleEvent(&event)
 }
 
-func (s *meekEventProcessor) WithdrawlCandidates(ids []string) {
+func (s *meekEventProcessor) ExcludeWithdrawnCandidates(ids []string) {
 	event := events.WithdrawlCandidates{}
 	event.Ids = ids
 
@@ -79,7 +82,34 @@ func (s *meekEventProcessor) HasEnded() bool {
 func (s *meekEventProcessor) ExcludeRemainingCandidates() {
 	event := events.ExcludeRemaining{}
 
-	s.HandleEvent(&event)
+	s.handleEvent(&event)
+}
+
+func (s *meekEventProcessor) ExcludeLowestCandidate() {
+
+}
+
+func (s *meekEventProcessor) IncrementRound() {
+	s.handleEvent(&events.IncrementRound{})
+}
+
+func (s *meekEventProcessor) DistributeVotes() {
+
+}
+
+func (s *meekEventProcessor) RoundHasEnded() bool {
+
+	if !s.State.Round.AnyElected {
+		return true
+	}
+
+	numElected := s.State.Pool.ElectedCount()
+
+	if numElected >= s.State.NumSeats {
+		return true
+	}
+
+	return false
 }
 
 func (s *meekEventProcessor) Changes() (election.Events, error) {

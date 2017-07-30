@@ -11,3 +11,11 @@ type MeekState struct {
 	Scale      int64
 	ElectedAll bool
 }
+
+func NewMeekState() *MeekState {
+	state := MeekState{}
+	state.Round = stv.StvRound{0, false}
+	state.Pool = NewPool()
+
+	return &state
+}
