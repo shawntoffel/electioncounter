@@ -34,6 +34,8 @@ func (state *meekStvCounter) HasEnded() bool {
 }
 
 func (state *meekStvCounter) Result() (*election.Result, error) {
+	state.Meek.ExcludeRemainingCandidates()
+
 	changes, err := state.Meek.Changes()
 
 	result := election.Result{}

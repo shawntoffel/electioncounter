@@ -11,6 +11,7 @@ type MeekEventProcessor interface {
 	WithdrawlCandidates(ids []string)
 	PerformPreliminaryElection()
 	HasEnded() bool
+	ExcludeRemainingCandidates()
 	Changes() (election.Events, error)
 }
 
@@ -73,6 +74,10 @@ func (s *meekEventProcessor) HasEnded() bool {
 	numElected := s.State.Pool.ElectedCount()
 
 	return numElected == s.State.NumSeats
+}
+
+func (s *meekEventProcessor) ExcludeRemainingCandidates() {
+
 }
 
 func (s *meekEventProcessor) Changes() (election.Events, error) {
