@@ -21,7 +21,7 @@ func (e *Create) Transition(state *state.MeekState) (string, error) {
 	state.Pool.AddNewCandidates(e.Candidates)
 	state.Ballots = e.Ballots.Rollup()
 
-	state.Scale = int64(math.Pow(10, state.Precision))
+	state.Scale = math.Pow64(int64(10), int64(state.Precision))
 
 	buffer := bytes.Buffer{}
 
