@@ -15,8 +15,9 @@ type MeekEventProcessor interface {
 }
 
 type meekEventProcessor struct {
-	Error error
-	State *state.MeekState
+	Error      error
+	ElectedAll bool
+	State      *state.MeekState
 }
 
 func NewMeekEventProcessor(events []MeekEvent) MeekEventProcessor {
@@ -57,6 +58,8 @@ func (s *meekEventProcessor) PerformPreliminaryElection() {
 		event := events.ElectAll{}
 
 		s.handleEvent(&event)
+
+		s.ElectedAll = true
 	}
 }
 
@@ -65,7 +68,13 @@ func (s *meekEventProcessor) HasEnded() bool {
 		return true
 	}
 
-	return true
+	if s.ElectedAll {
+		return true
+	}
+
+	numElected := s.State.Pool.ElectedCount()
+
+	return numElected == s.State.NumSeats
 }
 
 func (s *meekEventProcessor) Changes() (election.Events, error) {

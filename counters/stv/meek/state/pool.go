@@ -9,6 +9,7 @@ type Pool interface {
 	Candidate(id string) MeekCandidate
 	Candidates() MeekCandidates
 	Count() int
+	ElectedCount() int
 	ExcludedCount() int
 	ElectCandidate(id string)
 	AddNewCandidates(candidates election.Candidates)
@@ -40,21 +41,29 @@ func (p *pool) Candidates() MeekCandidates {
 	return candidates
 }
 
+func (p *pool) CandidatesWithStatus(status CandidateStatus) MeekCandidates {
+	candidates := p.Candidates()
+	result := MeekCandidates{}
+
+	for _, candidate := range candidates {
+		if candidate.Status == status {
+			result = append(result, candidate)
+		}
+	}
+
+	return result
+}
+
 func (p *pool) Count() int {
 	return len(p.Storage.List())
 }
 
 func (p *pool) ExcludedCount() int {
-	count := 0
-	candidates := p.Candidates()
+	return len(p.CandidatesWithStatus(Excluded))
+}
 
-	for _, candidate := range candidates {
-		if candidate.Status == Excluded {
-			count++
-		}
-	}
-
-	return count
+func (p *pool) ElectedCount() int {
+	return len(p.CandidatesWithStatus(Elected))
 }
 
 func (p *pool) ElectCandidate(id string) {
