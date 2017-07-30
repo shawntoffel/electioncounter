@@ -86,7 +86,9 @@ func (s *meekEventProcessor) ExcludeRemainingCandidates() {
 }
 
 func (s *meekEventProcessor) ExcludeLowestCandidate() {
+	event := events.ExcludeLowest{}
 
+	s.handleEvent(&event)
 }
 
 func (s *meekEventProcessor) IncrementRound() {

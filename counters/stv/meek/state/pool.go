@@ -3,15 +3,17 @@ package state
 import (
 	"github.com/shawntoffel/electioncounter/election"
 	"github.com/shawntoffel/memorystorage"
+	"sort"
 )
 
 type Pool interface {
 	Candidate(id string) MeekCandidate
+	Lowest() MeekCandidates
 	Candidates() MeekCandidates
 	Count() int
 	ElectedCount() int
 	ExcludedCount() int
-	ElectCandidate(id string)
+	Elect(id string)
 	AddNewCandidates(candidates election.Candidates)
 	Exclude(id string)
 }
@@ -66,12 +68,30 @@ func (p *pool) ElectedCount() int {
 	return len(p.CandidatesWithStatus(Elected))
 }
 
-func (p *pool) ElectCandidate(id string) {
+func (p *pool) Elect(id string) {
 	candidate := p.Candidate(id)
 
 	candidate.Status = Elected
 
 	p.Storage.Set(candidate.Id, candidate)
+}
+
+func (p *pool) Lowest() MeekCandidates {
+	candidates := p.Candidates()
+
+	sort.Sort(ByVotes(candidates))
+
+	lowest := MeekCandidates{}
+
+	for _, candidate := range candidates {
+		if len(lowest) > 0 && candidate.Votes != lowest[0].Votes {
+			break
+		}
+
+		lowest = append(lowest, candidate)
+	}
+
+	return lowest
 }
 
 func (p *pool) AddNewCandidates(candidates election.Candidates) {

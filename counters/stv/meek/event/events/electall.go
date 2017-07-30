@@ -12,7 +12,7 @@ func (e *ElectAll) Transition(s *state.MeekState) (string, error) {
 
 	for _, c := range candidates {
 		if c.Status == state.Hopeful {
-			s.Pool.ElectCandidate(c.Id)
+			s.Pool.Elect(c.Id)
 		}
 	}
 
