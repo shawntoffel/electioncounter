@@ -1,7 +1,7 @@
 package election
 
 type Config struct {
-	NumberToElect       int
+	NumSeats            int
 	Ballots             Ballots
 	Candidates          Candidates
 	WithdrawnCandidates []string

@@ -8,6 +8,8 @@ import (
 type Pool interface {
 	Candidate(id string) MeekCandidate
 	Candidates() MeekCandidates
+	Count() int
+	ElectCandidate(id string)
 	AddNewCandidates(candidates election.Candidates)
 	Exclude(id string)
 }
@@ -35,6 +37,18 @@ func (p *pool) Candidates() MeekCandidates {
 	}
 
 	return candidates
+}
+
+func (p *pool) Count() int {
+	return len(p.Storage.List())
+}
+
+func (p *pool) ElectCandidate(id string) {
+	candidate := p.Candidate(id)
+
+	candidate.Status = Elected
+
+	p.Storage.Set(candidate.Id, candidate)
 }
 
 func (p *pool) AddNewCandidates(candidates election.Candidates) {

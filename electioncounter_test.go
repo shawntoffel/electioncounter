@@ -57,7 +57,7 @@ func TestMeekStv(t *testing.T) {
 	config.Ballots = ballots
 	config.WithdrawnCandidates = []string{"Frank"}
 
-	config.NumberToElect = 3
+	config.NumSeats = 3
 	config.Precision = 6
 
 	var cm = NewElectionCounter()

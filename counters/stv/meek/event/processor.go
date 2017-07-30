@@ -9,6 +9,7 @@ import (
 type MeekEventProcessor interface {
 	Create(config election.Config)
 	WithdrawlCandidates(ids []string)
+	CountInitialVotes()
 	HasEnded() bool
 	Changes() (election.Events, error)
 }
@@ -36,7 +37,7 @@ func (s *meekEventProcessor) Create(config election.Config) {
 	event.Candidates = config.Candidates
 	event.Ballots = config.Ballots
 	event.Precision = config.Precision
-	event.NumberToElect = config.NumberToElect
+	event.NumSeats = config.NumSeats
 
 	s.handleEvent(&event)
 }
@@ -46,6 +47,16 @@ func (s *meekEventProcessor) WithdrawlCandidates(ids []string) {
 	event.Ids = ids
 
 	s.handleEvent(&event)
+}
+
+func (s *meekEventProcessor) CountInitialVotes() {
+	numCandidates := s.State.Pool.Count()
+
+	if numCandidates < s.State.NumSeats {
+		event := events.ElectAll{}
+
+		s.handleEvent(&event)
+	}
 }
 
 func (s *meekEventProcessor) HasEnded() bool {

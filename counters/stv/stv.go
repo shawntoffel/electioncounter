@@ -7,8 +7,8 @@ import (
 
 type StvState struct {
 	counters.CounterState
-	Quota         int64
-	Round         int
-	NumberToElect int
-	Ballots       election.RolledUpBallots
+	Quota    int64
+	Round    int
+	NumSeats int
+	Ballots  election.RolledUpBallots
 }

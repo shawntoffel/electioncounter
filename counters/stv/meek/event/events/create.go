@@ -9,14 +9,14 @@ import (
 )
 
 type Create struct {
-	NumberToElect int
-	Ballots       election.Ballots
-	Candidates    election.Candidates
-	Precision     int
+	NumSeats   int
+	Ballots    election.Ballots
+	Candidates election.Candidates
+	Precision  int
 }
 
 func (e *Create) Transition(state *state.MeekState) (string, error) {
-	state.NumberToElect = e.NumberToElect
+	state.NumSeats = e.NumSeats
 	state.Precision = e.Precision
 	state.Pool.AddNewCandidates(e.Candidates)
 	state.Ballots = e.Ballots.Rollup()
@@ -28,7 +28,7 @@ func (e *Create) Transition(state *state.MeekState) (string, error) {
 	buffer.WriteString("A new Meek STV count has been created")
 	buffer.WriteString(fmt.Sprintf("\nCandidates: %d", len(e.Candidates)))
 	buffer.WriteString(fmt.Sprintf("\nBallots: %d", len(e.Ballots)))
-	buffer.WriteString(fmt.Sprintf("\nWinners: %d", state.NumberToElect))
+	buffer.WriteString(fmt.Sprintf("\nSeats: %d", state.NumSeats))
 	buffer.WriteString(fmt.Sprintf("\nPrecision: %d", state.Precision))
 
 	return buffer.String(), nil
