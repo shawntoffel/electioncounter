@@ -25,10 +25,12 @@ func (e *ExcludeLowest) Transition(s *state.MeekState) (string, error) {
 		lowest = lowestCandidates[i]
 
 		buffer.WriteString(fmt.Sprintf("Candidates %v are tied for the lowest number of votes.", lowestCandidates))
-		buffer.WriteString(fmt.Sprintf("Candidate %s was randomly selected to break the tie.", lowest.Name))
+		buffer.WriteString(fmt.Sprintf("\nCandidate %s was randomly selected to break the tie.", lowest.Name))
 	}
 
 	s.Pool.Exclude(lowest.Id)
 
-	return "Candidate '" + lowest.Name + "' has the lowest votes and is excluded.", nil
+	buffer.WriteString("\nCandidate '" + lowest.Name + "' has the lowest votes and is excluded.")
+
+	return buffer.String(), nil
 }
