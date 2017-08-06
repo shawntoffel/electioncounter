@@ -22,6 +22,7 @@ func (e *Create) Transition(state *state.MeekState) (string, error) {
 	state.Ballots = e.Ballots.Rollup()
 
 	state.Scale = math.Pow64(int64(10), int64(state.Precision))
+	state.MaxIterations = 1000
 
 	buffer := bytes.Buffer{}
 
@@ -30,6 +31,7 @@ func (e *Create) Transition(state *state.MeekState) (string, error) {
 	buffer.WriteString(fmt.Sprintf("\nBallots: %d", len(e.Ballots)))
 	buffer.WriteString(fmt.Sprintf("\nSeats: %d", state.NumSeats))
 	buffer.WriteString(fmt.Sprintf("\nPrecision: %d", state.Precision))
+	buffer.WriteString(fmt.Sprintf("\nMax iterations: %d", state.MaxIterations))
 
 	return buffer.String(), nil
 }

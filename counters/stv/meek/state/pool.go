@@ -8,6 +8,7 @@ import (
 
 type Pool interface {
 	Candidate(id string) MeekCandidate
+	SetVotes(id string, votes int64)
 	Lowest() MeekCandidates
 	Candidates() MeekCandidates
 	Count() int
@@ -30,6 +31,14 @@ func NewPool() Pool {
 
 func (p *pool) Candidate(id string) MeekCandidate {
 	return p.Storage.Get(id).(MeekCandidate)
+}
+
+func (p *pool) SetVotes(id string, votes int64) {
+	candidate := p.Candidate(id)
+
+	candidate.Votes = votes
+
+	p.Storage.Set(candidate.Id, candidate)
 }
 
 func (p *pool) Candidates() MeekCandidates {

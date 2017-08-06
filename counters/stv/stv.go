@@ -5,15 +5,10 @@ import (
 	"github.com/shawntoffel/electioncounter/election"
 )
 
-type StvState struct {
+type State struct {
 	counters.CounterState
 	Quota    int64
-	Round    StvRound
+	Round    int
 	NumSeats int
 	Ballots  election.RolledUpBallots
-}
-
-type StvRound struct {
-	Number     int
-	AnyElected bool
 }

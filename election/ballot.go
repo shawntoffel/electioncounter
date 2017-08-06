@@ -6,11 +6,11 @@ import (
 
 type Ballots []Ballot
 type Ballot struct {
-	List *list.List
+	*list.List
 }
 
 func NewBallot() Ballot {
-	ballot := Ballot{list.New()}
+	ballot := Ballot(list.New())
 
 	return ballot
 }
