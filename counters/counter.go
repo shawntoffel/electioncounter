@@ -14,4 +14,5 @@ type Counter interface {
 type CounterState struct {
 	Events          election.Events
 	ExpectedVersion int
+	Error           error
 }
