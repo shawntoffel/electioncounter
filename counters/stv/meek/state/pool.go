@@ -12,6 +12,7 @@ type Pool interface {
 	Lowest() MeekCandidates
 	Candidates() MeekCandidates
 	Count() int
+	Elected() MeekCandidates
 	ElectedCount() int
 	ExcludedCount() int
 	Elect(id string)
@@ -72,6 +73,10 @@ func (p *pool) Count() int {
 
 func (p *pool) ExcludedCount() int {
 	return len(p.CandidatesWithStatus(Excluded))
+}
+
+func (p *pool) Elected() MeekCandidates {
+	return p.CandidatesWithStatus(Elected)
 }
 
 func (p *pool) ElectedCount() int {

@@ -9,11 +9,11 @@ import (
 func (e *CountCreated) Process() election.Event {
 	buffer := bytes.Buffer{}
 
-	buffer.WriteString("A new Meek STV count has been created")
-	buffer.WriteString(fmt.Sprintf("\nCandidates: %d", len(e.Candidates)))
-	buffer.WriteString(fmt.Sprintf("\nBallots: %d", len(e.Ballots)))
-	buffer.WriteString(fmt.Sprintf("\nSeats: %d", e.NumSeats))
-	buffer.WriteString(fmt.Sprintf("\nPrecision: %d", e.Precision))
+	buffer.WriteString("A new Meek STV count has been created. ")
+	buffer.WriteString(fmt.Sprintf("Candidates: %d", len(e.Candidates)))
+	buffer.WriteString(fmt.Sprintf(", Ballots: %d", len(e.Ballots)))
+	buffer.WriteString(fmt.Sprintf(", Seats: %d", e.NumSeats))
+	buffer.WriteString(fmt.Sprintf(", Precision: %d", e.Precision))
 
 	description := buffer.String()
 

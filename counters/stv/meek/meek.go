@@ -49,10 +49,25 @@ func (state *meekStvCounter) HasEnded() bool {
 func (state *meekStvCounter) Result() (*election.Result, error) {
 	state.Meek.ExcludeRemainingCandidates()
 
-	changes, err := state.Meek.Changes()
+	status := state.Meek.Status()
+
+	if status.Error != nil {
+		return nil, status.Error
+	}
+
+	elected := election.Candidates{}
+
+	for _, candidate := range status.Elected {
+		c := election.Candidate{}
+		c.Id = candidate.Id
+		c.Name = candidate.Name
+
+		elected = append(elected, c)
+	}
 
 	result := election.Result{}
-	result.Events = changes
+	result.Events = status.Events
+	result.Candidates = elected
 
-	return &result, err
+	return &result, nil
 }

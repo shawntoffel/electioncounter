@@ -8,6 +8,12 @@ import (
 	"time"
 )
 
+type CommanderStatus struct {
+	Error   error
+	Events  election.Events
+	Elected state.MeekCandidates
+}
+
 type Commander interface {
 	Create(config election.Config)
 	ExcludeWithdrawnCandidates(ids []string)
@@ -18,7 +24,7 @@ type Commander interface {
 	HasEnded() bool
 	DistributeVotes()
 	RoundHasEnded() bool
-	Changes() (election.Events, error)
+	Status() CommanderStatus
 }
 
 type commander struct {
@@ -43,6 +49,7 @@ func (c *commander) Create(config election.Config) {
 	c.State.Ballots = config.Ballots.Rollup()
 
 	c.State.Scale = math.Pow64(10, int64(c.State.Precision))
+	C.State.MaxIterations = 1000
 
 	event := CountCreated{}
 	event.Candidates = config.Candidates
@@ -115,7 +122,6 @@ func (c *commander) ExcludeRemainingCandidates() {
 }
 
 func (c *commander) DistributeVotes() {
-
 	/*
 		for i := 0; i < p.State.MaxIterations; i++ {
 			p.State.MeekRound.Excess = 0
@@ -177,6 +183,9 @@ func (c *commander) HasEnded() bool {
 }
 
 func (c *commander) RoundHasEnded() bool {
+	if c.Error != nil {
+		return true
+	}
 
 	if !c.State.MeekRound.AnyElected {
 		return true
@@ -191,6 +200,11 @@ func (c *commander) RoundHasEnded() bool {
 	return false
 }
 
-func (c *commander) Changes() (election.Events, error) {
-	return c.Consumer.Events(), c.Error
+func (c *commander) Status() CommanderStatus {
+	status := CommanderStatus{}
+	status.Error = c.Error
+	status.Events = c.Consumer.Events()
+	status.Elected = c.State.Pool.Elected()
+
+	return status
 }
