@@ -49,7 +49,7 @@ func (c *commander) Create(config election.Config) {
 	c.State.Ballots = config.Ballots.Rollup()
 
 	c.State.Scale = math.Pow64(10, int64(c.State.Precision))
-	C.State.MaxIterations = 1000
+	c.State.MaxIterations = 1000
 
 	event := CountCreated{}
 	event.Candidates = config.Candidates
@@ -85,6 +85,7 @@ func (c *commander) PerformPreliminaryElection() {
 
 func (c *commander) IncrementRound() {
 	c.State.Round = c.State.Round + 1
+	c.State.MeekRound = state.MeekRound{}
 
 	c.Consumer.ProcessEvent(&RoundStarted{c.State.Round})
 }
@@ -122,50 +123,49 @@ func (c *commander) ExcludeRemainingCandidates() {
 }
 
 func (c *commander) DistributeVotes() {
-	/*
-		for i := 0; i < p.State.MaxIterations; i++ {
-			p.State.MeekRound.Excess = 0
+	for i := 0; i < c.State.MaxIterations; i++ {
+		c.State.MeekRound.Excess = 0
 
-			for _, ballot := range p.State.Ballots {
-				value := int64(ballot.Count) * p.State.Scale
+		for _, ballot := range c.State.Ballots {
+			value := int64(ballot.Count) * c.State.Scale
 
-				ended := false
+			ended := false
 
-				iter := ballot.Ballot.List.Front()
+			iter := ballot.Ballot.List.Front()
 
-				for {
-					candidate := p.State.Pool.Candidate(iter.Value.(string))
+			for {
+				candidate := c.State.Pool.Candidate(iter.Value.(string))
 
-					if !ended && candidate.Weight > 0 {
-						ended = candidate.Status == state.Hopeful
+				if !ended && candidate.Weight > 0 {
+					ended = candidate.Status == state.Hopeful
 
-						if ended {
-							votes := candidate.Votes + value
-							p.State.Pool.SetVotes(candidate.Id, votes)
-							value = 0
-						} else {
-							votes := candidate.Votes + value*candidate.Weight
-							p.State.Pool.SetVotes(candidate.Id, votes)
-							value = value * (p.State.Scale - candidate.Weight) / p.State.Scale
-						}
+					if ended {
+						votes := candidate.Votes + value
+						c.State.Pool.SetVotes(candidate.Id, votes)
+						value = 0
+					} else {
+						votes := candidate.Votes + value*candidate.Weight
+						c.State.Pool.SetVotes(candidate.Id, votes)
+						value = value * (c.State.Scale - candidate.Weight) / c.State.Scale
 					}
-
-					if iter.Next() == nil {
-						break
-					}
-
-					iter = iter.Next()
 				}
 
-				p.State.MeekRound.Excess = p.State.MeekRound.Excess + value
+				if iter.Next() == nil {
+					break
+				}
 
+				iter = iter.Next()
 			}
 
-			p.State.Quota = 1600000
+			c.State.MeekRound.Excess = c.State.MeekRound.Excess + value
 
-			break
+		}
 
-		}*/
+		c.State.Quota = 1600000
+
+		break
+
+	}
 }
 
 func (c *commander) HasEnded() bool {
