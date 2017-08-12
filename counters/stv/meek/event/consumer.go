@@ -6,15 +6,16 @@ import (
 
 type Consumer interface {
 	ProcessEvent(event MeekEvent)
+	Events() election.Events
 }
 
 type consumer struct {
-	Events election.Events
+	events election.Events
 }
 
 func NewConsumer() Consumer {
 	c := consumer{}
-	c.Events = election.Events{}
+	c.events = election.Events{}
 
 	return &c
 }
@@ -22,5 +23,9 @@ func NewConsumer() Consumer {
 func (c *consumer) ProcessEvent(meekEvent MeekEvent) {
 	event := meekEvent.Process()
 
-	c.Events = append(c.Events, event)
+	c.events = append(c.events, event)
+}
+
+func (c *consumer) Events() election.Events {
+	return c.events
 }

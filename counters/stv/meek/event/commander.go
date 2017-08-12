@@ -192,7 +192,5 @@ func (c *commander) RoundHasEnded() bool {
 }
 
 func (c *commander) Changes() (election.Events, error) {
-	//return c.State.Events, c.Error
-
-	return election.Events{}, c.Error
+	return c.Consumer.Events(), c.Error
 }
