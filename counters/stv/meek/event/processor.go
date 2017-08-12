@@ -3,52 +3,48 @@ package event
 import (
 	"bytes"
 	"fmt"
-	"github.com/shawntoffel/electioncounter/counters/stv/meek/state"
 	"github.com/shawntoffel/electioncounter/election"
-	"github.com/shawntoffel/math"
-	"math/rand"
-	"time"
 )
 
-func (e *CountCreated) Process() (election.Event, error) {
+func (e *CountCreated) Process() election.Event {
 	buffer := bytes.Buffer{}
 
 	buffer.WriteString("A new Meek STV count has been created")
 	buffer.WriteString(fmt.Sprintf("\nCandidates: %d", len(e.Candidates)))
 	buffer.WriteString(fmt.Sprintf("\nBallots: %d", len(e.Ballots)))
 	buffer.WriteString(fmt.Sprintf("\nSeats: %d", e.NumSeats))
-	buffer.WriteString(fmt.Sprintf("\nPrecision: %d", e.state.Precision))
+	buffer.WriteString(fmt.Sprintf("\nPrecision: %d", e.Precision))
 
 	description := buffer.String()
 
-	return election.Event{description}, nil
+	return election.Event{description}
 }
 
-func (e *CandidatesExcluded) Process() (election.Event, error) {
+func (e *CandidatesExcluded) Process() election.Event {
 	names := []string{}
 
-	for c, _ := range e.Candidates {
-		names = append(names, c.Name)
+	for _, candidate := range e.Candidates {
+		names = append(names, candidate.Name)
 	}
 
-	description := fmt.Sprintf("The following candidates have been excluded: %v", names), nil
+	description := fmt.Sprintf("The following candidates have been excluded: %v", names)
 
-	return election.Event{description}, nil
+	return election.Event{description}
 }
 
-func (e *AllHopefulCandidatesElected) Process() (election.Event, error) {
+func (e *AllHopefulCandidatesElected) Process() election.Event {
 	description := "All hopeful candidates have been elected."
 
-	return election.Event{description}, nil
+	return election.Event{description}
 }
 
-func (e *RoundStarted) Process() (election.Event, error) {
-	description := fmt.Sprintf("Round %d has started.", e.Round), nil
+func (e *RoundStarted) Process() election.Event {
+	description := fmt.Sprintf("Round %d has started.", e.Round)
 
-	return election.Event{description}, nil
+	return election.Event{description}
 }
 
-func (e *LowestCandidateExcluded) Process() (election.Event, error) {
+func (e *LowestCandidateExcluded) Process() election.Event {
 
 	buffer := bytes.Buffer{}
 
@@ -67,11 +63,11 @@ func (e *LowestCandidateExcluded) Process() (election.Event, error) {
 
 	description := buffer.String()
 
-	return election.Event{description}, nil
+	return election.Event{description}
 }
 
-func (e *RemainingCandidatesExcluded) Process() (election.Event, error) {
+func (e *RemainingCandidatesExcluded) Process() election.Event {
 	description := "All remaining candidates have been excluded."
 
-	return election.Event{description}, nil
+	return election.Event{description}
 }

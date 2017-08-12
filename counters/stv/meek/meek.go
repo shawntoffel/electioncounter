@@ -11,12 +11,12 @@ type MeekStvCounter interface {
 }
 
 type meekStvCounter struct {
-	Meek event.MeekEventProcessor
+	Meek event.Commander
 }
 
 func NewMeekStvCounter(history []event.MeekEvent) MeekStvCounter {
 	m := meekStvCounter{}
-	m.Meek = event.NewMeekEventProcessor(history)
+	m.Meek = event.NewCommander()
 	return &m
 }
 

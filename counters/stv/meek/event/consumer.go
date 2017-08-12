@@ -1,7 +1,6 @@
 package event
 
 import (
-	"github.com/shawntoffel/electioncounter/counters/stv/meek/state"
 	"github.com/shawntoffel/electioncounter/election"
 )
 

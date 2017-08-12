@@ -2,10 +2,11 @@ package event
 
 import (
 	"github.com/shawntoffel/electioncounter/counters/stv/meek/state"
+	"github.com/shawntoffel/electioncounter/election"
 )
 
 type MeekEvent interface {
-	Process() (election.Event, error)
+	Process() election.Event
 }
 
 type CountCreated struct {
@@ -32,5 +33,5 @@ type LowestCandidateExcluded struct {
 }
 
 type RemainingCandidatesExcluded struct {
-	Candidates state.Candidates
+	Candidates state.MeekCandidates
 }

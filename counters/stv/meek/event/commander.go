@@ -3,6 +3,9 @@ package event
 import (
 	"github.com/shawntoffel/electioncounter/counters/stv/meek/state"
 	"github.com/shawntoffel/electioncounter/election"
+	"github.com/shawntoffel/math"
+	"math/rand"
+	"time"
 )
 
 type Commander interface {
@@ -20,8 +23,9 @@ type Commander interface {
 
 type commander struct {
 	ElectedAll bool
-	State      state.MeekState
+	State      *state.MeekState
 	Consumer   Consumer
+	Error      error
 }
 
 func NewCommander() Commander {
@@ -33,13 +37,12 @@ func NewCommander() Commander {
 }
 
 func (c *commander) Create(config election.Config) {
-	c.State.NumSeats = e.NumSeats
-	c.State.Precision = e.Precision
-	c.State.Pool.AddNewCandidates(e.Candidates)
-	c.State.Ballots = e.Ballots.Rollup()
+	c.State.NumSeats = config.NumSeats
+	c.State.Precision = config.Precision
+	c.State.Pool.AddNewCandidates(config.Candidates)
+	c.State.Ballots = config.Ballots.Rollup()
 
-	state.Scale = math.Pow64(10, int64(state.Precision))
-	state.MaxIterations = 1000
+	c.State.Scale = math.Pow64(10, int64(c.State.Precision))
 
 	event := CountCreated{}
 	event.Candidates = config.Candidates
@@ -47,40 +50,40 @@ func (c *commander) Create(config election.Config) {
 	event.Precision = config.Precision
 	event.NumSeats = config.NumSeats
 
-	p.Consumer.ProcessEvent(&event)
+	c.Consumer.ProcessEvent(&event)
 }
 
 func (c *commander) ExcludeWithdrawnCandidates(ids []string) {
 	excluded := state.MeekCandidates{}
 
 	for _, id := range ids {
-		candidate := state.Pool.Exclude(id)
+		candidate := c.State.Pool.Exclude(id)
 
 		excluded = append(excluded, candidate)
 	}
 
-	p.Consumer.ProcessEvent(&CandidatesExcluded{excluded})
+	c.Consumer.ProcessEvent(&CandidatesExcluded{excluded})
 }
 
 func (c *commander) PerformPreliminaryElection() {
-	numCandidates := p.State.Pool.Count()
-	numExcluded := p.State.Pool.ExcludedCount()
+	numCandidates := c.State.Pool.Count()
+	numExcluded := c.State.Pool.ExcludedCount()
 
-	if numCandidates <= (p.State.NumSeats + numExcluded) {
+	if numCandidates <= (c.State.NumSeats + numExcluded) {
 		c.State.Pool.ElectHopeful()
-		s.State.ElectedAll = true
-		p.Consumer.ProcessEvent(&AllHopefulCandidatesElected{})
+		c.State.ElectedAll = true
+		c.Consumer.ProcessEvent(&AllHopefulCandidatesElected{})
 	}
 }
 
 func (c *commander) IncrementRound() {
 	c.State.Round = c.State.Round + 1
 
-	p.Consumer.ProcessEvent(&RoundStarted{c.State.Round})
+	c.Consumer.ProcessEvent(&RoundStarted{c.State.Round})
 }
 
 func (c *commander) ExcludeLowestCandidate() {
-	lowestCandidates := c.Pool.Lowest()
+	lowestCandidates := c.State.Pool.Lowest()
 
 	toExclude := lowestCandidates[0]
 
@@ -95,23 +98,23 @@ func (c *commander) ExcludeLowestCandidate() {
 		randomUsed = true
 	}
 
-	c.Pool.Exclude(toExclude.Id)
+	c.State.Pool.Exclude(toExclude.Id)
 	c.Consumer.ProcessEvent(&LowestCandidateExcluded{lowestCandidates, toExclude, randomUsed})
 }
 
 func (c *commander) ExcludeRemainingCandidates() {
-	candidates := c.Pool.Candidates()
+	candidates := c.State.Pool.Candidates()
 
 	for _, candidate := range candidates {
 		if candidate.Status != state.Elected {
-			s.Pool.Exclude(candidate.Id)
+			c.State.Pool.Exclude(candidate.Id)
 		}
 	}
 
-	p.Consumer.ProcessEvent(&RemainingCandidatesExcluded{})
+	c.Consumer.ProcessEvent(&RemainingCandidatesExcluded{})
 }
 
-func (p *commander) DistributeVotes() {
+func (c *commander) DistributeVotes() {
 
 	/*
 		for i := 0; i < p.State.MaxIterations; i++ {
