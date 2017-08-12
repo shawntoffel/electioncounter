@@ -15,8 +15,9 @@ type Pool interface {
 	ElectedCount() int
 	ExcludedCount() int
 	Elect(id string)
+	ElectHopeful()
 	AddNewCandidates(candidates election.Candidates)
-	Exclude(id string)
+	Exclude(id string) MeekCandidate
 }
 
 type pool struct {
@@ -85,6 +86,16 @@ func (p *pool) Elect(id string) {
 	p.Storage.Set(candidate.Id, candidate)
 }
 
+func (p *pool) ElectHopeful() {
+	candidates := p.Candidates()
+
+	for _, candidate := range candidates {
+		if candidate.Status == Hopeful {
+			p.Elect(candidate.Id)
+		}
+	}
+}
+
 func (p *pool) Lowest() MeekCandidates {
 	candidates := p.Candidates()
 
@@ -116,9 +127,11 @@ func (p *pool) AddNewCandidates(candidates election.Candidates) {
 	}
 }
 
-func (p *pool) Exclude(id string) {
+func (p *pool) Exclude(id string) MeekCandidate {
 	candidate := p.Candidate(id)
 	candidate.Weight = 0
 	candidate.Status = Excluded
 	p.Storage.Set(candidate.Id, candidate)
+
+	return p.Candidate(id)
 }

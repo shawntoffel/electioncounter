@@ -1,24 +1,36 @@
 package event
 
+import (
+	"github.com/shawntoffel/electioncounter/counters/stv/meek/state"
+)
+
 type MeekEvent interface {
-	Process(m *state.MeekState) (string, error)
+	Process() (election.Event, error)
 }
 
-type Create struct {
+type CountCreated struct {
 	NumSeats   int
 	Ballots    election.Ballots
 	Candidates election.Candidates
 	Precision  int
 }
 
-type ElectAll struct{}
+type CandidatesExcluded struct {
+	Candidates state.MeekCandidates
+}
 
-type ExcludeLowest struct{}
+type AllHopefulCandidatesElected struct{}
 
-type ExcludeRemaining struct{}
+type RoundStarted struct {
+	Round int
+}
 
-type IncrementRound struct{}
+type LowestCandidateExcluded struct {
+	LowestCandidates  state.MeekCandidates
+	ExcludedCandidate state.MeekCandidate
+	RandomUsed        bool
+}
 
-type WithdrawlCandidates struct {
-	Ids []string
+type RemainingCandidatesExcluded struct {
+	Candidates state.Candidates
 }

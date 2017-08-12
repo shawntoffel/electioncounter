@@ -2,6 +2,7 @@ package event
 
 import (
 	"github.com/shawntoffel/electioncounter/counters/stv/meek/state"
+	"github.com/shawntoffel/electioncounter/election"
 )
 
 type Consumer interface {
@@ -9,29 +10,18 @@ type Consumer interface {
 }
 
 type consumer struct {
-	State state.MeekState
+	Events election.Events
 }
 
 func NewConsumer() Consumer {
 	c := consumer{}
-	c.State = state.NewMeekState{}
+	c.Events = election.Events{}
+
 	return &c
 }
 
-func (c *consumer) ProcessEvent(event MeekEvent) {
-	if c.State.Error != nil {
-		return
-	}
+func (c *consumer) ProcessEvent(meekEvent MeekEvent) {
+	event := meekEvent.Process()
 
-	description, err := event.Process(&c.State)
-
-	if err != nil {
-		c.State.Error = err
-		return
-	}
-
-	counterEvent := election.Event{}
-	counterEvent.Description = description
-
-	c.State.Events = append(c.State.Events, counterEvent)
+	c.Events = append(c.Events, event)
 }
