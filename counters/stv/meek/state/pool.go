@@ -16,9 +16,11 @@ type Pool interface {
 	ElectedCount() int
 	ExcludedCount() int
 	Elect(id string)
+	Almost(id string)
 	ElectHopeful()
 	AddNewCandidates(candidates election.Candidates)
 	Exclude(id string) MeekCandidate
+	SetWeight(id string, weight int64)
 }
 
 type pool struct {
@@ -39,6 +41,14 @@ func (p *pool) SetVotes(id string, votes int64) {
 	candidate := p.Candidate(id)
 
 	candidate.Votes = votes
+
+	p.Storage.Set(candidate.Id, candidate)
+}
+
+func (p *pool) SetWeight(id string, weight int64) {
+	candidate := p.Candidate(id)
+
+	candidate.Weight = weight
 
 	p.Storage.Set(candidate.Id, candidate)
 }
@@ -87,6 +97,14 @@ func (p *pool) Elect(id string) {
 	candidate := p.Candidate(id)
 
 	candidate.Status = Elected
+
+	p.Storage.Set(candidate.Id, candidate)
+}
+
+func (p *pool) Almost(id string) {
+	candidate := p.Candidate(id)
+
+	candidate.Status = Almost
 
 	p.Storage.Set(candidate.Id, candidate)
 }

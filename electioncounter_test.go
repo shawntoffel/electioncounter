@@ -74,6 +74,10 @@ func TestMeekStv(t *testing.T) {
 		fmt.Println(e.Description)
 	}
 
+	for _, c := range result.Candidates {
+		fmt.Println(c.Name)
+	}
+
 	count := len(result.Candidates)
 	expectedCount := 3
 

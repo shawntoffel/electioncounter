@@ -10,6 +10,7 @@ const (
 	Elected  CandidateStatus = iota
 	Hopeful  CandidateStatus = iota
 	Excluded CandidateStatus = iota
+	Almost   CandidateStatus = iota
 )
 
 type MeekCandidates []MeekCandidate

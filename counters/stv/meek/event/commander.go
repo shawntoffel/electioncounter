@@ -1,6 +1,7 @@
 package event
 
 import (
+	"fmt"
 	"github.com/shawntoffel/electioncounter/counters/stv/meek/state"
 	"github.com/shawntoffel/electioncounter/election"
 	"github.com/shawntoffel/math"
@@ -58,6 +59,11 @@ func (c *commander) Create(config election.Config) {
 	event.NumSeats = config.NumSeats
 
 	c.Consumer.ProcessEvent(&event)
+
+	candidates := c.State.Pool.Candidates()
+	for _, candidate := range candidates {
+		c.State.Pool.SetWeight(candidate.Id, 1*c.State.Scale)
+	}
 }
 
 func (c *commander) ExcludeWithdrawnCandidates(ids []string) {
@@ -123,6 +129,7 @@ func (c *commander) ExcludeRemainingCandidates() {
 }
 
 func (c *commander) DistributeVotes() {
+	fmt.Println("distributing votes")
 	for i := 0; i < c.State.MaxIterations; i++ {
 		c.State.MeekRound.Excess = 0
 
@@ -132,6 +139,7 @@ func (c *commander) DistributeVotes() {
 			ended := false
 
 			iter := ballot.Ballot.List.Front()
+			fmt.Println("c", iter.Value.(string))
 
 			for {
 				candidate := c.State.Pool.Candidate(iter.Value.(string))
@@ -147,6 +155,7 @@ func (c *commander) DistributeVotes() {
 						votes := candidate.Votes + value*candidate.Weight
 						c.State.Pool.SetVotes(candidate.Id, votes)
 						value = value * (c.State.Scale - candidate.Weight) / c.State.Scale
+						fmt.Println(value)
 					}
 				}
 
@@ -163,9 +172,52 @@ func (c *commander) DistributeVotes() {
 
 		c.State.Quota = 1600000
 
-		break
+		converged := true
+		candidates := c.State.Pool.Candidates()
+		for _, candidate := range candidates {
+			if candidate.Status == state.Elected {
+				temp := c.State.Quota * candidate.Weight
+
+				a := temp / candidate.Votes
+
+				remaineder := temp % candidate.Votes
+
+				if remaineder > 0 {
+					a = a + 1
+				}
+
+				if a > 1000010 || a < 999990 {
+					converged = false
+				}
+
+				c.State.Pool.SetWeight(candidate.Id, a)
+				fmt.Println(candidate.Name, " weight set to ", a)
+			}
+		}
+
+		if converged {
+			break
+		}
 
 	}
+
+	count := 0
+	candidates := c.State.Pool.Candidates()
+	for _, candidate := range candidates {
+		if candidate.Status == state.Hopeful && candidate.Votes > c.State.Quota {
+			count = count + 1
+			c.State.Pool.Almost(candidate.Id)
+		}
+	}
+
+	candidates = c.State.Pool.Candidates()
+	for _, candidate := range candidates {
+		if candidate.Status == state.Almost {
+			c.State.Pool.Elect(candidate.Id)
+			c.State.MeekRound.AnyElected = true
+		}
+	}
+
 }
 
 func (c *commander) HasEnded() bool {
