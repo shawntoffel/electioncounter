@@ -72,7 +72,7 @@ func (c *commander) ExcludeWithdrawnCandidates(ids []string) {
 	for _, id := range ids {
 		candidate := c.State.Pool.Exclude(id)
 
-		excluded = append(excluded, candidate)
+		excluded = append(excluded, *candidate)
 	}
 
 	c.Consumer.ProcessEvent(&CandidatesExcluded{excluded})
@@ -133,13 +133,24 @@ func (c *commander) DistributeVotes() {
 	for i := 0; i < c.State.MaxIterations; i++ {
 		c.State.MeekRound.Excess = 0
 
+		cs := c.State.Pool.Candidates()
+
+		for _, candidate := range cs {
+			c.State.Pool.SetVotes(candidate.Id, 0)
+		}
+
+		total := 0
+
+		for _, ballot := range c.State.Ballots {
+			total = total + ballot.Count
+		}
+
 		for _, ballot := range c.State.Ballots {
 			value := int64(ballot.Count) * c.State.Scale
 
 			ended := false
 
 			iter := ballot.Ballot.List.Front()
-			fmt.Println("c", iter.Value.(string))
 
 			for {
 				candidate := c.State.Pool.Candidate(iter.Value.(string))
@@ -150,12 +161,13 @@ func (c *commander) DistributeVotes() {
 					if ended {
 						votes := candidate.Votes + value
 						c.State.Pool.SetVotes(candidate.Id, votes)
+						fmt.Println("SetVotes ", candidate.Id, votes)
 						value = 0
 					} else {
-						votes := candidate.Votes + value*candidate.Weight
+						votes := candidate.Votes + (value*candidate.Weight / c.State.Scale)
 						c.State.Pool.SetVotes(candidate.Id, votes)
+						fmt.Println("SetVotes not ended ", candidate.Id, votes)
 						value = value * (c.State.Scale - candidate.Weight) / c.State.Scale
-						fmt.Println(value)
 					}
 				}
 
@@ -170,7 +182,9 @@ func (c *commander) DistributeVotes() {
 
 		}
 
-		c.State.Quota = 1600000
+		c.State.Quota = ((int64(total) - c.State.MeekRound.Excess) * c.State.Scale) / (int64(c.State.NumSeats) + 1) / c.State.Scale * c.State.Scale
+
+		fmt.Println("Quota: ", c.State.Quota)
 
 		converged := true
 		candidates := c.State.Pool.Candidates()
@@ -179,6 +193,9 @@ func (c *commander) DistributeVotes() {
 				temp := c.State.Quota * candidate.Weight
 
 				a := temp / candidate.Votes
+
+				fmt.Println("a", a)
+				fmt.Println("cv", candidate.Votes)
 
 				remaineder := temp % candidate.Votes
 
@@ -203,10 +220,11 @@ func (c *commander) DistributeVotes() {
 
 	count := 0
 	candidates := c.State.Pool.Candidates()
-	for _, candidate := range candidates {
-		if candidate.Status == state.Hopeful && candidate.Votes > c.State.Quota {
+ 	for _, candidate := range candidates {
+ 		if candidate.Status == state.Hopeful && candidate.Votes > c.State.Quota {
 			count = count + 1
 			c.State.Pool.Almost(candidate.Id)
+			fmt.Println("Almost ", candidate.Id)
 		}
 	}
 

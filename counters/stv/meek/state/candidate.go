@@ -4,13 +4,13 @@ import (
 	"github.com/shawntoffel/electioncounter/election"
 )
 
-type CandidateStatus int
+type CandidateStatus string
 
 const (
-	Elected  CandidateStatus = iota
-	Hopeful  CandidateStatus = iota
-	Excluded CandidateStatus = iota
-	Almost   CandidateStatus = iota
+	Elected  CandidateStatus = "Elected"
+	Hopeful  CandidateStatus = "Hopeful"
+	Excluded CandidateStatus = "Excluded"
+	Almost   CandidateStatus = "Almost"
 )
 
 type MeekCandidates []MeekCandidate
