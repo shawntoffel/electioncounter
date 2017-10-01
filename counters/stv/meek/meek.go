@@ -4,6 +4,7 @@ import (
 	"github.com/shawntoffel/electioncounter/counters"
 	"github.com/shawntoffel/electioncounter/counters/stv/meek/event"
 	"github.com/shawntoffel/electioncounter/election"
+	"fmt"
 )
 
 type MeekStvCounter interface {
@@ -27,6 +28,7 @@ func (state *meekStvCounter) Initialize(config election.Config) {
 }
 
 func (state *meekStvCounter) UpdateRound() {
+    fmt.Println("updating round============================================================")
 	state.Meek.IncrementRound()
 
 	for {

@@ -129,7 +129,7 @@ func (c *commander) ExcludeRemainingCandidates() {
 }
 
 func (c *commander) DistributeVotes() {
-	fmt.Println("distributing votes")
+	fmt.Println("distributing votes*******************************************")
 	for i := 0; i < c.State.MaxIterations; i++ {
 		c.State.MeekRound.Excess = 0
 
@@ -190,25 +190,25 @@ func (c *commander) DistributeVotes() {
 		candidates := c.State.Pool.Candidates()
 		for _, candidate := range candidates {
 			if candidate.Status == state.Elected {
-				temp := c.State.Quota * candidate.Weight
 
-				a := temp / candidate.Votes
-
-				fmt.Println("a", a)
-				fmt.Println("cv", candidate.Votes)
+				temp := (c.State.Quota * candidate.Weight) / candidate.Votes
 
 				remaineder := temp % candidate.Votes
 
 				if remaineder > 0 {
-					a = a + 1
+					temp = temp + 1
 				}
 
-				if a > 1000010 || a < 999990 {
+				var buff = c.State.Scale / 10
+
+				if candidate.Votes > c.State.Quota + buff || candidate.Votes < c.State.Quota - buff {
 					converged = false
+				}else {
+					temp = temp
 				}
 
-				c.State.Pool.SetWeight(candidate.Id, a)
-				fmt.Println(candidate.Name, " weight set to ", a)
+				c.State.Pool.SetWeight(candidate.Id, temp)
+				fmt.Println(candidate.Name, " weight set to ", temp)
 			}
 		}
 
@@ -233,6 +233,7 @@ func (c *commander) DistributeVotes() {
 		if candidate.Status == state.Almost {
 			c.State.Pool.Elect(candidate.Id)
 			c.State.MeekRound.AnyElected = true
+			fmt.Println("Elected  ", candidate.Id)
 		}
 	}
 
