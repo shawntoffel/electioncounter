@@ -19,11 +19,10 @@ func NewCounterFactory() CounterFactory {
 
 func (c *counterFactory) GetCounter(name string) (election.Counter, error) {
 
-	if strings.EqualFold(name, "meek stv") {
+	if strings.EqualFold(name, "meekstv") {
 		counter := meekstv.NewMeekStv()
 
 		return counter, nil
-
 	}
 
 	return nil, errors.New("Unsupported counting method: " + name)
