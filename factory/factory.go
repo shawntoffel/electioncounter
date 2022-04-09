@@ -2,9 +2,10 @@ package factory
 
 import (
 	"errors"
+	"strings"
+
 	"github.com/shawntoffel/election"
 	"github.com/shawntoffel/meekstv"
-	"strings"
 )
 
 type CounterFactory interface {
@@ -18,18 +19,14 @@ func NewCounterFactory() CounterFactory {
 }
 
 func (c *counterFactory) GetCounter(name string) (election.Counter, error) {
-
 	if strings.EqualFold(name, "meekstv") {
-		counter := meekstv.NewMeekStv()
-
-		return counter, nil
+		return meekstv.NewMeekStv(), nil
 	}
 
-	return nil, errors.New("Unsupported counting method: " + name)
+	return nil, errors.New("unsupported counting method: " + name)
 }
 
 func NewCounter(method string) (election.Counter, error) {
 	counterFactory := NewCounterFactory()
-
 	return counterFactory.GetCounter(method)
 }

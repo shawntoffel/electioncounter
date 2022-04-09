@@ -17,7 +17,6 @@ func NewElectionCounter() ElectionCounter {
 
 func (c *electionCounter) Count(method string, config election.Config) (*election.Result, error) {
 	counter, err := factory.NewCounter(method)
-
 	if err != nil {
 		return nil, err
 	}
